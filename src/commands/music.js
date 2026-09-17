@@ -52,8 +52,8 @@ module.exports = {
     const guildId = interaction.guild.id;
 
     if (action === "play") {
-      const voiceChannel = interaction.member.voice.channel;
-
+      const member = await interaction.guild.members.fetch(interaction.user.id);
+const voiceChannel = member.voice.channel;
       if (!voiceChannel) {
         return interaction.reply({
           content: "🎧 Join a voice channel first!",
