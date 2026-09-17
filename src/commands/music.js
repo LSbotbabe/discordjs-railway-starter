@@ -6,7 +6,7 @@ const {
   AudioPlayerStatus,
   getVoiceConnection,
 } = require("@discordjs/voice");
-const play = require("play-dl");
+const play = require("@iamtraction/play-dl");
 
 const queues = new Map();
 
