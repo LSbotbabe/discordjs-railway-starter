@@ -115,7 +115,59 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
     return;
   }
-});
+// Verification form submission
+if (
+  interaction.isModalSubmit() &&
+  interaction.customId === "lit_verify_submit"
+) {
+  await interaction.deferReply({ ephemeral: true });
+
+  try {
+    const gameName = interaction.fields
+      .getTextInputValue("game_name")
+      .trim();
+
+    const gameTag = interaction.fields
+      .getTextInputValue("game_tag")
+      .trim();
+
+    const nickname = `${gameName} | ${gameTag}`;
+
+    if (nickname.length > 32) {
+      await interaction.editReply(
+        "❌ Your Game Name + Game Tag is too long. Please shorten it."
+      );
+      return;
+    }
+
+    await interaction.member.setNickname(nickname);
+
+    const memberRole = interaction.guild.roles.cache.find(
+      role => role.name === "LS Member"
+    );
+
+    if (!memberRole) {
+      await interaction.editReply(
+        '❌ I could not find the "LS Member" role.'
+      );
+      return;
+    }
+
+    await interaction.member.roles.add(memberRole);
+
+    await interaction.editReply(
+      `✅ Verified! Your server name is now **${nickname}** and you now have access to the member channels.`
+    );
+  } catch (error) {
+    console.error("Verification error:", error);
+
+    await interaction.editReply(
+      "❌ I couldn't complete verification. Please contact an LS admin."
+    );
+  }
+
+  return;
+}});
 
 client.login(token).catch((error) => {
   if (error?.code === "TokenInvalid" || /token/i.test(error?.message ?? "")) {
