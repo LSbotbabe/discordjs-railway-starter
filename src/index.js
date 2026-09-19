@@ -154,7 +154,29 @@ if (
     }
 
     await interaction.member.roles.add(memberRole);
+const chatChannel = interaction.guild.channels.cache.get(
+  process.env.CHAT_CHANNEL_ID
+);
 
+if (chatChannel) {
+  await chatChannel.send({
+    content: `➡️ <@${interaction.user.id}> just slid into the server. 🔥`,
+    components: [
+      {
+        type: 1,
+        components: [
+          {
+            type: 2,
+            custom_id: `lit_wave_${interaction.user.id}`,
+            label: "Wave",
+            emoji: { name: "👋" },
+            style: 1,
+          },
+        ],
+      },
+    ],
+  });
+}
     await interaction.editReply(
       `✅ Verified! Your server name is now **${nickname}** and you now have access to the member channels.`
     );
