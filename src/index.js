@@ -52,18 +52,68 @@ client.once(Events.ClientReady, async (c) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+  // Slash commands
+  if (interaction.isChatInputCommand()) {
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
 
-  const command = client.commands.get(interaction.commandName);
-  if (!command) return;
+    try {
+      await command.execute(interaction, client);
+    } catch (error) {
+      console.error(`Command /${interaction.commandName} failed:`, error);
 
-  try {
-    await command.execute(interaction, client);
-  } catch (error) {
-    console.error(`Command /${interaction.commandName} failed:`, error);
-    const reply = { content: "Something went wrong running that command.", ephemeral: true };
-    if (interaction.replied || interaction.deferred) await interaction.followUp(reply);
-    else await interaction.reply(reply);
+      const reply = {
+        content: "Something went wrong while running that command.",
+        ephemeral: true,
+      };
+
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp(reply);
+      } else {
+        await interaction.reply(reply);
+      }
+    }
+    return;
+  }
+
+  // Verify button
+  if (
+    interaction.isButton() &&
+    interaction.customId === "lit_verify_open"
+  ) {
+    await interaction.showModal({
+      custom_id: "lit_verify_submit",
+      title: "Lit Sessions Verification",
+      components: [
+        {
+          type: 1,
+          components: [
+            {
+              type: 4,
+              custom_id: "game_name",
+              label: "Sunday City Game Name",
+              style: 1,
+              required: true,
+              max_length: 50,
+            },
+          ],
+        },
+        {
+          type: 1,
+          components: [
+            {
+              type: 4,
+              custom_id: "game_tag",
+              label: "Sunday City Game Tag",
+              style: 1,
+              required: true,
+              max_length: 50,
+            },
+          ],
+        },
+      ],
+    });
+    return;
   }
 });
 
