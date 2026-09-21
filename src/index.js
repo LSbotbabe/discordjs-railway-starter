@@ -88,7 +88,7 @@ const coastalCutieSticker = serverStickers.find(
 );
   await interaction.reply({
   content: `👋 <@${interaction.user.id}> waved at <@${newMemberId}>!`,
-  stickers: coastalCutieSticker ? [coastalCutieSticker.id] : []
+  stickers: coastalCutieSticker ? [coastalCutieSticker] : []
 });
 
   return;
