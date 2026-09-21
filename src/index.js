@@ -75,13 +75,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
     return;
   }
-// Coastal Cutie sticker
-const stickerMessage = await interaction.guild.channels.cache
-  .get("1536069376485368018")
-  ?.messages.fetch("1551723534244515941")
-  .catch(() => null);
-
-const coastalCutieSticker = stickerMessage?.stickers.first();
 
   // Wave button
 if (
@@ -89,7 +82,12 @@ if (
   interaction.customId.startsWith("lit_wave_")
 ) {
   const newMemberId = interaction.customId.replace("lit_wave_", "");
+const stickerMessage = await interaction.guild.channels.cache
+  .get("1536069376485368018")
+  ?.messages.fetch("1551723534244515941")
+  .catch(() => null);
 
+const coastalCutieSticker = stickerMessage?.stickers.first();
   await interaction.reply({
   content: `👋 <@${interaction.user.id}> waved at <@${newMemberId}>!`,
   stickers: coastalCutieSticker ? [coastalCutieSticker.id] : []
