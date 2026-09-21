@@ -75,7 +75,21 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
     return;
   }
+// Wave button
+if (
+  interaction.isButton() &&
+  interaction.customId.startsWith("lit_wave_")
+) {
+  const newMemberId = interaction.customId.replace("lit_wave_", "");
 
+  await interaction.reply({
+    content: `👋 <@${interaction.user.id}> waved at <@${newMemberId}>!`,
+  });
+
+  return;
+}
+  
+  
   // Verify button
   if (
     interaction.isButton() &&
