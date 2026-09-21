@@ -82,10 +82,10 @@ if (
   interaction.customId.startsWith("lit_wave_")
 ) {
   const newMemberId = interaction.customId.replace("lit_wave_", "");
-const coastalCutieSticker =
-  interaction.guild.stickers.cache.find(
-    sticker => sticker.name === "Coastal Cutie"
-  );
+const serverStickers = await interaction.guild.stickers.fetch();
+const coastalCutieSticker = serverStickers.find(
+  sticker => sticker.name === "Coastal Cutie"
+);
   await interaction.reply({
   content: `👋 <@${interaction.user.id}> waved at <@${newMemberId}>!`,
   stickers: coastalCutieSticker ? [coastalCutieSticker.id] : []
