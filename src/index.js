@@ -83,16 +83,35 @@ if (
 ) {
   const newMemberId = interaction.customId.replace("lit_wave_", "");
 const serverStickers = await interaction.guild.stickers.fetch();
-const coastalCutieSticker = serverStickers.find(
-  sticker => sticker.name === "Coastal Cutie"
+
+const waveStickerNames = [
+  "Coastal Cutie",
+  "Dripster",
+  "Dandy",
+  "Sunny Dee",
+  "Influencer",
+  "Girl Next Door",
+  "Go Girl",
+  "Buddy",
+  "Dripster1",
+  "Agent 51",
+  "Jawsie",
+  "Frank Furter",
+  "Moo Bert T-Bone"
+];
+
+const availableWaveStickers = serverStickers.filter(
+  sticker => waveStickerNames.includes(sticker.name)
 );
+
+const randomSticker = availableWaveStickers.random();
   await interaction.reply({
   content: `👋 <@${interaction.user.id}> waved at <@${newMemberId}>!`
 });
 
-if (coastalCutieSticker) {
+if (randomSticker) {
   await interaction.channel.send({
-    stickers: [coastalCutieSticker.id]
+    stickers: [randomSticker.id]
   });
 }
 
