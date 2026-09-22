@@ -105,12 +105,11 @@ const availableWaveStickers = serverStickers.filter(
 );
 
 const randomSticker = availableWaveStickers.random();
-  await interaction.reply({
-  content: `👋 <@${interaction.user.id}> waved at <@${newMemberId}>!`
-});
+await interaction.deferUpdate();
 
 if (randomSticker) {
   await interaction.channel.send({
+    content: `👋 <@${interaction.user.id}> waved at <@${newMemberId}>!`,
     stickers: [randomSticker.id]
   });
 }
