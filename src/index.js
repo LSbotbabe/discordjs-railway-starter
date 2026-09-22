@@ -203,7 +203,7 @@ const chatChannel = interaction.guild.channels.cache.get(
 
 if (chatChannel) {
   await chatChannel.send({
-    content: `➡️ <@${interaction.user.id}> just slid into the server. 🔥`,
+    content: `➡️ Glad you're here, <@${interaction.user.id}>! 🔥`,
     components: [
       {
         type: 1,
@@ -211,7 +211,7 @@ if (chatChannel) {
           {
             type: 2,
             custom_id: `lit_wave_${interaction.user.id}`,
-            label: "Wave",
+            label: "Wave to say hi!",
             emoji: { name: "👋" },
             style: 1,
           },
