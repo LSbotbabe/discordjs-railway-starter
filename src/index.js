@@ -82,6 +82,13 @@ if (
   interaction.customId.startsWith("lit_wave_")
 ) {
   const newMemberId = interaction.customId.replace("lit_wave_", "");
+  if (interaction.user.id === newMemberId) {
+  await interaction.reply({
+    content: "😂 You can't wave at yourself! This button is for everyone else to welcome you.",
+    ephemeral: true
+  });
+  return;
+}
 const serverStickers = await interaction.guild.stickers.fetch();
 
 const waveStickerNames = [
