@@ -1,1 +1,128 @@
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+} = require("discord.js");
 
+const ALLOWED_ROLES = [
+  "Server Owner",
+  "LS Party Ambassador",
+  "LS Party Host",
+  "LS co-Host",
+  "B-Day party planner",
+];
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName("party")
+    .setDescription("Create a Lit Sessions party RSVP")
+    .addStringOption(option =>
+      option
+        .setName("title")
+        .setDescription("Name of the party")
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option
+        .setName("details")
+        .setDescription("Party details or description")
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option
+        .setName("time")
+        .setDescription("Party date and time")
+        .setRequired(true)
+    )
+    .addIntegerOption(option =>
+      option
+        .setName("gems")
+        .setDescription("Gem entry amount")
+        .setMinValue(0)
+        .setRequired(true)
+    )
+    .addIntegerOption(option =>
+      option
+        .setName("spots")
+        .setDescription("Maximum number of party spots")
+        .setMinValue(1)
+        .setMaxValue(100)
+        .setRequired(true)
+    )
+    .addAttachmentOption(option =>
+      option
+        .setName("flyer")
+        .setDescription("Party flyer/image")
+        .setRequired(false)
+    ),
+
+  async execute(interaction) {
+
+    // Only approved LS roles can create parties
+    const hasPermission = interaction.member.roles.cache.some(role =>
+      ALLOWED_ROLES.includes(role.name)
+    );
+
+    if (!hasPermission) {
+      return interaction.reply({
+        content:
+          "💎 Sorry babe! Only LS party staff can create a party RSVP.",
+        ephemeral: true,
+      });
+    }
+
+    const title = interaction.options.getString("title");
+    const details = interaction.options.getString("details");
+    const time = interaction.options.getString("time");
+    const gems = interaction.options.getInteger("gems");
+    const spots = interaction.options.getInteger("spots");
+    const flyer = interaction.options.getAttachment("flyer");
+
+    const partyEmbed = new EmbedBuilder()
+      .setTitle(`🔥 ${title} 🔥`)
+      .setDescription(details)
+      .addFields(
+        {
+          name: "📅 PARTY TIME",
+          value: time,
+          inline: false,
+        },
+        {
+          name: "💎 GEM ENTRY",
+          value: `${gems} Gems`,
+          inline: true,
+        },
+        {
+          name: "👥 PARTY SPOTS",
+          value: `0/${spots}`,
+          inline: true,
+        },
+        {
+          name: "✅ Going",
+          value: "Nobody yet — who's first? 👀",
+          inline: false,
+        },
+        {
+          name: "❓ Maybe",
+          value: "Nobody yet",
+          inline: false,
+        },
+        {
+          name: "⏳ Waitlist",
+          value: "Nobody yet",
+          inline: false,
+        }
+      )
+      .setFooter({
+        text: `Hosted by ${interaction.user.username} • Lit Sessions`,
+      })
+      .setTimestamp();
+
+    if (flyer && flyer.contentType?.startsWith("image/")) {
+      partyEmbed.setImage(flyer.url);
+    }
+
+    await interaction.reply({
+      embeds: [partyEmbed],
+    });
+  },
+};
