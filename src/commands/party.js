@@ -1,6 +1,9 @@
 const {
   SlashCommandBuilder,
   EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } = require("discord.js");
 
 const ALLOWED_ROLES = [
@@ -120,9 +123,28 @@ module.exports = {
     if (flyer && flyer.contentType?.startsWith("image/")) {
       partyEmbed.setImage(flyer.url);
     }
+const buttons = new ActionRowBuilder().addComponents(
+  new ButtonBuilder()
+    .setCustomId("party_going")
+    .setLabel("Going")
+    .setEmoji("✅")
+    .setStyle(ButtonStyle.Success),
 
+  new ButtonBuilder()
+    .setCustomId("party_decline")
+    .setLabel("Can't Go")
+    .setEmoji("❌")
+    .setStyle(ButtonStyle.Danger),
+
+  new ButtonBuilder()
+    .setCustomId("party_maybe")
+    .setLabel("Maybe")
+    .setEmoji("❓")
+    .setStyle(ButtonStyle.Primary)
+);
     await interaction.reply({
-      embeds: [partyEmbed],
-    });
+  embeds: [partyEmbed],
+  components: [buttons],
+});
   },
 };
