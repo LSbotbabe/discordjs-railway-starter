@@ -164,6 +164,159 @@ if (randomSticker) {
     });
     return;
   }
+
+// Party RSVP buttons
+if (
+  interaction.isButton() &&
+  ["party_going", "party_decline", "party_maybe"].includes(interaction.customId)
+) {
+  const message = interaction.message;
+  const oldEmbed = message.embeds[0];
+
+  if (!oldEmbed) {
+    await interaction.reply({
+      content: "❌ I couldn't find this party RSVP.",
+      ephemeral: true,
+    });
+    return;
+  }
+
+  // Read party capacity from the PARTY SPOTS field
+  const spotsField = oldEmbed.fields.find(
+    field => field.name === "👥 PARTY SPOTS"
+  );
+
+  const maxSpots = spotsField
+    ? parseInt(spotsField.value.split("/")[1])
+    : 100;
+
+  // Store RSVP lists using Discord user IDs
+  if (!client.partyRSVPs) {
+    client.partyRSVPs = new Map();
+  }
+
+  let party = client.partyRSVPs.get(message.id);
+
+  if (!party) {
+    party = {
+      going: [],
+      maybe: [],
+      declined: [],
+      waitlist: [],
+      maxSpots: maxSpots,
+    };
+
+    client.partyRSVPs.set(message.id, party);
+  }
+
+  const userId = interaction.user.id;
+
+  // Remove person from every list first
+  party.going = party.going.filter(id => id !== userId);
+  party.maybe = party.maybe.filter(id => id !== userId);
+  party.declined = party.declined.filter(id => id !== userId);
+  party.waitlist = party.waitlist.filter(id => id !== userId);
+
+  let responseMessage = "";
+
+  if (interaction.customId === "party_going") {
+    if (party.going.length < party.maxSpots) {
+      party.going.push(userId);
+      responseMessage = "✅ You're going! See you at the party! 🔥";
+    } else {
+      party.waitlist.push(userId);
+      responseMessage =
+        "⏳ The party is full, babe! You've been added to the waitlist.";
+    }
+  }
+
+  if (interaction.customId === "party_maybe") {
+    party.maybe.push(userId);
+    responseMessage = "❓ You've been added as Maybe!";
+  }
+
+  if (interaction.customId === "party_decline") {
+    party.declined.push(userId);
+    responseMessage = "❌ RSVP updated — you can't make this one.";
+  }
+
+  // If a Going spot opened, move first waitlisted person up
+  while (
+    party.going.length < party.maxSpots &&
+    party.waitlist.length > 0
+  ) {
+    const promotedUser = party.waitlist.shift();
+    party.going.push(promotedUser);
+  }
+
+  const names = ids =>
+    ids.length
+      ? ids.map(id => `<@${id}>`).join("\n")
+      : "Nobody yet";
+
+  const updatedFields = oldEmbed.fields.map(field => {
+    if (field.name === "👥 PARTY SPOTS") {
+      return {
+        name: field.name,
+        value: `${party.going.length}/${party.maxSpots}`,
+        inline: field.inline,
+      };
+    }
+
+    if (field.name === "✅ Going") {
+      return {
+        name: field.name,
+        value: names(party.going),
+        inline: field.inline,
+      };
+    }
+
+    if (field.name === "❓ Maybe") {
+      return {
+        name: field.name,
+        value: names(party.maybe),
+        inline: field.inline,
+      };
+    }
+
+    if (field.name === "⏳ Waitlist") {
+      return {
+        name: field.name,
+        value: names(party.waitlist),
+        inline: field.inline,
+      };
+    }
+
+    return {
+      name: field.name,
+      value: field.value,
+      inline: field.inline,
+    };
+  });
+
+  const updatedEmbed = {
+    title: oldEmbed.title,
+    description: oldEmbed.description,
+    color: oldEmbed.color,
+    fields: updatedFields,
+    footer: oldEmbed.footer,
+    timestamp: oldEmbed.timestamp,
+    image: oldEmbed.image,
+  };
+
+  await interaction.update({
+    embeds: [updatedEmbed],
+    components: message.components,
+  });
+
+  await interaction.followUp({
+    content: responseMessage,
+    ephemeral: true,
+  });
+
+  return;
+}
+  
 // Verification form submission
 if (
   interaction.isModalSubmit() &&
