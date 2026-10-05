@@ -89,11 +89,12 @@ module.exports = {
           value: time,
           inline: false,
         },
-        {
-          name: "💎 GEM ENTRY",
-          value: `${gems} Gems`,
-          inline: true,
-        },
+        
+          {
+  name: "<:Gem:1544534918103695380> GEM ENTRY",
+  value: `${gems} Gems`,
+  inline: true,
+},
         {
           name: "👥 PARTY SPOTS",
           value: `0/${spots}`,
@@ -113,7 +114,13 @@ module.exports = {
           name: "⏳ Waitlist",
           value: "Nobody yet",
           inline: false,
-        }
+        },
+    
+{
+  name: "❌ Can't Go",
+  value: "Nobody yet",
+  inline: false,
+}
       )
       .setFooter({
         text: `Hosted by ${interaction.user.username} • Lit Sessions`,
