@@ -25,7 +25,7 @@ const client = new Client({
   ],
 });
 client.commands = new Collection();
-
+client.partyRSVPs = new Map();
 // Load every command file next to this one, so the working directory does not matter.
 const commandsDir = path.join(__dirname, "commands");
 const payload = [];
@@ -249,10 +249,13 @@ if (
     party.going.push(promotedUser);
   }
 
-  const names = ids =>
-    ids.length
-      ? ids.map(id => `<@${id}>`).join("\n")
-      : "Nobody yet";
+const names = ids =>
+  ids.length
+    ? ids.map(id => {
+        const member = interaction.guild.members.cache.get(id);
+        return member ? member.displayName : `User ${id}`;
+      }).join("\n")
+    : "Nobody yet";
 
   const updatedFields = oldEmbed.fields.map(field => {
     if (field.name === "👥 PARTY SPOTS") {
