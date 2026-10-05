@@ -92,7 +92,7 @@ module.exports = {
         
           {
   name: "<:Gem:1544534918103695380> Gems",
-  value: `${gems} Gems`,
+  value: `${gems}`,
   inline: true,
 },
         {
