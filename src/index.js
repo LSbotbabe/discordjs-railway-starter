@@ -266,7 +266,7 @@ const names = ids =>
       };
     }
 
-    if (field.name === "✅ Going") {
+    if (field.name === "✅ Yes") {
       return {
         name: field.name,
         value: names(party.going),
