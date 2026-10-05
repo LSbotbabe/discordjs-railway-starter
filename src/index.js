@@ -258,7 +258,7 @@ const names = ids =>
     : "Nobody yet";
 
   const updatedFields = oldEmbed.fields.map(field => {
-    if (field.name === "👥 PARTY SPOTS") {
+    if (field.name === "👥 Headcount") {
       return {
         name: field.name,
         value: `${party.going.length}/${party.maxSpots}`,
