@@ -81,7 +81,7 @@ module.exports = {
     const flyer = interaction.options.getAttachment("flyer");
 
     const partyEmbed = new EmbedBuilder()
-      .setTitle(`🔥🎉 ${title} 🎉🔥`)
+      .setTitle(`<:LS:1544525450574041088>🔥 ${title} 🔥🎉`)
       .setDescription(details)
       .addFields(
         {
