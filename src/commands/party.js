@@ -81,11 +81,11 @@ module.exports = {
     const flyer = interaction.options.getAttachment("flyer");
 
     const partyEmbed = new EmbedBuilder()
-      .setTitle(`🔥 ${title} 🔥`)
+      .setTitle(`🔥🎉 ${title} 🎉🔥`)
       .setDescription(details)
       .addFields(
         {
-          name: "📅 PARTY TIME",
+      name: "⏰ TIME",
           value: time,
           inline: false,
         },
@@ -96,7 +96,7 @@ module.exports = {
   inline: true,
 },
         {
-          name: "👥 PARTY SPOTS",
+          name: "👥 SPOTS",
           value: `0/${spots}`,
           inline: true,
         },
