@@ -286,12 +286,28 @@ if (
         inline: field.inline,
       };
     }
+if (field.name === "⏳ Waitlist") {
+  return {
+    name: field.name,
+    value: names(party.waitlist),
+    inline: field.inline,
+  };
+}
 
-    return {
-      name: field.name,
-      value: field.value,
-      inline: field.inline,
-    };
+if (field.name === "❌ Can't Go") {
+  return {
+    name: field.name,
+    value: names(party.declined),
+    inline: field.inline,
+  };
+}
+
+return {
+  name: field.name,
+  value: field.value,
+  inline: field.inline,
+};
+    
   });
 
   const updatedEmbed = {
