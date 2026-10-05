@@ -85,23 +85,23 @@ module.exports = {
       .setDescription(details)
       .addFields(
         {
-      name: "⏰ TIME",
+      name: "⏰ Date & Time",
           value: time,
           inline: false,
         },
         
           {
-  name: "<:Gem:1544534918103695380> GEM ENTRY",
+  name: "<:Gem:1544534918103695380> Gems",
   value: `${gems} Gems`,
   inline: true,
 },
         {
-          name: "👥 SPOTS",
+          name: "👥 Headcount",
           value: `0/${spots}`,
           inline: true,
         },
         {
-          name: "✅ Going",
+          name: "✅ Yes",
           value: "Nobody yet — who's first? 👀",
           inline: false,
         },
@@ -133,7 +133,7 @@ module.exports = {
 const buttons = new ActionRowBuilder().addComponents(
   new ButtonBuilder()
     .setCustomId("party_going")
-    .setLabel("Going")
+    .setLabel("Yes")
     .setEmoji("✅")
     .setStyle(ButtonStyle.Success),
 
