@@ -183,7 +183,7 @@ if (
 
   // Read party capacity from the PARTY SPOTS field
   const spotsField = oldEmbed.fields.find(
-    field => field.name === "👥 PARTY SPOTS"
+    field => field.name === "👥 Headcount"
   );
 
   const maxSpots = spotsField
