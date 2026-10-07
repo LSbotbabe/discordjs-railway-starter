@@ -7,6 +7,7 @@ const {
   getVoiceConnection,
 } = require("@discordjs/voice");
 const play = require("@iamtraction/play-dl");
+const youtubedl = require("youtube-dl-exec");
 
 const queues = new Map();
 
@@ -204,11 +205,15 @@ async function playNext(guildId) {
     queue.playing = true;
 
     const song = queue.songs[0];
-    const stream = await play.stream(song.url);
+    const stream = youtubedl.exec(song.url, {
+  output: "-",
+  format: "bestaudio",
+  quiet: true,
+}, {
+  stdio: ["ignore", "pipe", "ignore"]
+});
 
-    const resource = createAudioResource(stream.stream, {
-      inputType: stream.type,
-    });
+const resource = createAudioResource(stream.stdout);
 
     queue.player.play(resource);
   } catch (error) {
