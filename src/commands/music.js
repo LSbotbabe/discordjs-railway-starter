@@ -8,9 +8,33 @@ const {
 } = require("@discordjs/voice");
 const play = require("@iamtraction/play-dl");
 const youtubedl = require("youtube-dl-exec");
+const { Shoukaku, Connectors } = require("shoukaku");
 
 const queues = new Map();
+let shoukaku;
 
+function getShoukaku(client) {
+
+    if (!shoukaku) {
+
+          const nodes = [{
+
+        name: "LS-Lavalink",
+
+  url: `${process.env.LAVALINK_HOST}:${process.env.LAVALINK_PORT}`,
+
+        auth: process.env.LAVALINK_PASSWORD,
+
+            secure: false,
+
+              }];
+
+          shoukaku = new Shoukaku(new Connectors.DiscordJS(client), nodes);
+
+        }
+
+    return shoukaku;
+  }
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("music")
@@ -105,35 +129,18 @@ const voiceChannel = member.voice.channel;
       let queue = queues.get(guildId);
 
       if (!queue) {
-        const connection = joinVoiceChannel({
-          channelId: voiceChannel.id,
-          guildId,
-          adapterCreator: interaction.guild.voiceAdapterCreator,
-          selfDeaf: false,
-        });
-
-        const player = createAudioPlayer();
+       
 
         queue = {
-          connection,
-          player,
+          client: interaction.client,
+          voiceChannelId: voiceChannel.id,
+          lavalinkPlayer: null,
           songs: [],
           playing: false,
         };
 
         queues.set(guildId, queue);
-        connection.subscribe(player);
-
-        player.on(AudioPlayerStatus.Idle, () => {
-          queue.songs.shift();
-          playNext(guildId);
-        });
-
-        player.on("error", (error) => {
-          console.error("Audio player error:", error);
-          queue.songs.shift();
-          playNext(guildId);
-        });
+        
       }
 
       queue.songs.push(song);
@@ -156,17 +163,17 @@ const voiceChannel = member.voice.channel;
     }
 
     if (action === "skip") {
-      queue.player.stop();
+    await queue.lavalinkPlayer.stopTrack();
       return interaction.reply("⏭️ Skipped!");
     }
 
     if (action === "pause") {
-      queue.player.pause();
+      await queue.lavalinkPlayer.setPaused(true);
       return interaction.reply("⏸️ Music paused.");
     }
 
     if (action === "resume") {
-      queue.player.unpause();
+    await queue.lavalinkPlayer.setPaused(false);
       return interaction.reply("▶️ Music resumed.");
     }
 
@@ -184,8 +191,8 @@ const voiceChannel = member.voice.channel;
     }
 
     if (action === "leave") {
-      queue.player.stop();
-      queue.connection.destroy();
+      await queue.lavalinkPlayer.stopTrack();
+      await queue.lavalinkPlayer.destroy();
       queues.delete(guildId);
 
       return interaction.reply("👋 Music stopped. LSBotBabe left the channel.");
@@ -205,17 +212,22 @@ async function playNext(guildId) {
     queue.playing = true;
 
     const song = queue.songs[0];
-    const stream = youtubedl.exec(song.url, {
-  output: "-",
-  format: "bestaudio",
-  quiet: false,
-}, {
-  stdio: ["ignore", "pipe", "pipe"]
+    const shoukaku = getShoukaku(queue.client);
+    const node = shoukaku.options.nodeResolver(shoukaku.nodes);
+    const result = await node.rest.resolve(song.url);
+    if (!result || !result.data) {
+  throw new Error("Lavalink could not load this song.");
+}
+    const track = Array.isArray(result.data)
+  ? result.data[0]
+  : result.data;
+    const player = await shoukaku.joinVoiceChannel({
+  guildId: guildId,
+  channelId: queue.voiceChannelId,
+  shardId: 0,
 });
-
-const resource = createAudioResource(stream.stdout);
-
-    queue.player.play(resource);
+    queue.lavalinkPlayer = player;
+    await player.playTrack({ track: { encoded: track.encoded } });
   } catch (error) {
     console.error("Playback error:", error);
     queue.songs.shift();
