@@ -208,9 +208,9 @@ async function playNext(guildId) {
     const stream = youtubedl.exec(song.url, {
   output: "-",
   format: "bestaudio",
-  quiet: true,
+  quiet: false,
 }, {
-  stdio: ["ignore", "pipe", "ignore"]
+  stdio: ["ignore", "pipe", "pipe"]
 });
 
 const resource = createAudioResource(stream.stdout);
