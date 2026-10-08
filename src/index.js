@@ -195,7 +195,7 @@ if (
     client.partyRSVPs = new Map();
   }
 
-  let party = client.partyRSVPs.get(message.id);
+  let party = client.partyRSVPs.get(partyKey);
 
   if (!party) {
     party = {
@@ -206,7 +206,7 @@ if (
       maxSpots: maxSpots,
     };
 
-    client.partyRSVPs.set(message.id, party);
+    client.partyRSVPs.set(partyKey, party);
   }
 
   const userId = interaction.user.id;
@@ -327,6 +327,25 @@ return {
     embeds: [updatedEmbed],
     components: message.components,
   });
+
+  const linkedMessageId = client.partyLinks.get(message.id);
+
+if (linkedMessageId) {
+  const linkedChannelId =
+    message.channelId === "1536069376485368018"
+      ? "1542935647130492979"
+      : "1536069376485368018";
+
+  if (linkedChannelId) {
+    const linkedChannel = await client.channels.fetch(linkedChannelId);
+    const linkedMessage = await linkedChannel.messages.fetch(linkedMessageId);
+
+    await linkedMessage.edit({
+      embeds: [updatedEmbed],
+      components: message.components,
+    });
+  }
+}
 
   await interaction.followUp({
     content: responseMessage,
