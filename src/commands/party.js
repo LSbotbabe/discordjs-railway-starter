@@ -149,9 +149,19 @@ const buttons = new ActionRowBuilder().addComponents(
     .setEmoji("❓")
     .setStyle(ButtonStyle.Primary)
 );
-    await interaction.reply({
+await interaction.reply({
+  embeds: [partyEmbed],
+  components: [buttons],
+
+});
+  const originalMessage = await interaction.fetchReply();
+    const chatChannel = await interaction.guild.channels.fetch("1536069376485368018");
+    const chatMessage = await chatChannel.send({
   embeds: [partyEmbed],
   components: [buttons],
 });
+    const client = interaction.client;
+    client.partyLinks.set(originalMessage.id, chatMessage.id);
+client.partyLinks.set(chatMessage.id, originalMessage.id);
   },
 };
