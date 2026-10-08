@@ -30,7 +30,8 @@ function getShoukaku(client) {
               }];
 
           shoukaku = new Shoukaku(new Connectors.DiscordJS(client), nodes);
-
+shoukaku.on("ready", (name) => console.log("Lavalink ready:", name));
+shoukaku.on("error", (name, error) => console.error("Lavalink connection error:", name, error));
         }
 
     return shoukaku;
