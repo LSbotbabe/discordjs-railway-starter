@@ -214,7 +214,20 @@ async function playNext(guildId) {
 
     const song = queue.songs[0];
     const shoukaku = getShoukaku(queue.client);
-    const node = [...shoukaku.nodes.values()].find(n => n.state === 1);
+    let node = [...shoukaku.nodes.values()].find(n => n.state === 1);
+
+if (!node) {
+  await new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => reject(new Error("Lavalink connection timed out")), 15000);
+
+    shoukaku.once("ready", () => {
+      clearTimeout(timeout);
+      resolve();
+    });
+  });
+
+  node = [...shoukaku.nodes.values()].find(n => n.state === 1);
+}
     if (!node) {
   throw new Error("No connected Lavalink node available");
 }
