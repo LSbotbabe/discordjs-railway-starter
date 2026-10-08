@@ -214,7 +214,10 @@ async function playNext(guildId) {
 
     const song = queue.songs[0];
     const shoukaku = getShoukaku(queue.client);
-    const node = shoukaku.nodes.values().next().value;
+    const node = [...shoukaku.nodes.values()].find(n => n.state === 1);
+    if (!node) {
+  throw new Error("No connected Lavalink node available");
+}
     const result = await node.rest.resolve(song.url);
     if (!result || !result.data) {
   throw new Error("Lavalink could not load this song.");
