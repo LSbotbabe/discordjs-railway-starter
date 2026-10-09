@@ -172,7 +172,14 @@ if (
 ) {
   const message = interaction.message;
   const oldEmbed = message.embeds[0];
-
+  const partyKey = message.id;
+  if (message.author.id !== client.user.id) {
+  await interaction.reply({
+    content: "💎 Please open the original party message to RSVP. Forwarded copies cannot accept RSVPs.",
+    ephemeral: true,
+  });
+  return;
+}
   if (!oldEmbed) {
     await interaction.reply({
       content: "❌ I couldn't find this party RSVP.",
@@ -328,25 +335,7 @@ return {
     components: message.components,
   });
 
-  const linkedMessageId = client.partyLinks.get(message.id);
-
-if (linkedMessageId) {
-  const linkedChannelId =
-    message.channelId === "1536069376485368018"
-      ? "1542935647130492979"
-      : "1536069376485368018";
-
-  if (linkedChannelId) {
-    const linkedChannel = await client.channels.fetch(linkedChannelId);
-    const linkedMessage = await linkedChannel.messages.fetch(linkedMessageId);
-
-    await linkedMessage.edit({
-      embeds: [updatedEmbed],
-      components: message.components,
-    });
-  }
-}
-
+  
   await interaction.followUp({
     content: responseMessage,
     ephemeral: true,
