@@ -5,6 +5,7 @@ const {
   Collection,
   Events,
   GatewayIntentBits,
+  Partials,
   REST,
   Routes,
 } = require("discord.js");
@@ -22,6 +23,18 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.MessageContent,
+  ],
+   partials: [
+
+    Partials.Message,
+
+    Partials.Channel,
+
+    Partials.Reaction,
+
   ],
 });
 client.commands = new Collection();
@@ -419,6 +432,31 @@ if (chatChannel) {
 
   return;
 }});
+
+client.on(Events.MessageReactionAdd, async (reaction, user) => {
+  if (user.bot || reaction.emoji.name !== "🌎") return;
+
+  try {
+    if (reaction.partial) {
+      await reaction.fetch();
+    }
+
+    const message = reaction.message;
+
+    if (message.partial) {
+      await message.fetch();
+    }
+
+    if (!message.content?.trim()) {
+      await message.reply("🌎 I can only translate text messages!");
+      return;
+    }
+
+    console.log("🌎 Translation requested:", message.content);
+  } catch (error) {
+    console.error("Translation reaction error:", error);
+  }
+});
 
 client.login(token).catch((error) => {
   if (error?.code === "TokenInvalid" || /token/i.test(error?.message ?? "")) {
