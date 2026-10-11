@@ -224,10 +224,35 @@ if (
 ) {
   const language = interaction.values[0];
 
-  await interaction.reply({
-    content: `🌎 You selected ${language.toUpperCase()}! Translation is being set up.`,
-    ephemeral: true,
+  await interaction.deferReply({ ephemeral: true });
+
+try {
+  const messageId = interaction.customId.replace("translate_select_", "");
+  const original = await interaction.channel.messages.fetch(messageId);
+
+  const url = "https://api.mymemory.translated.net/get?" +
+    new URLSearchParams({
+      q: original.content,
+      langpair: `en|${language}`,
+    });
+
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("Translation service unavailable");
+
+  const data = await response.json();
+  if (data.responseStatus !== 200 || !data.responseData?.translatedText) {
+    throw new Error("Translation failed");
+  }
+
+  await interaction.editReply({
+    content: `🌎 **Translation:**\n${data.responseData.translatedText}`,
   });
+} catch (error) {
+  console.error("Translation error:", error);
+  await interaction.editReply({
+    content: "❌ Translation failed. Please try again.",
+  });
+}
 
   return;
 }
