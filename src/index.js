@@ -457,6 +457,18 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     }
 
     console.log("🌎 Translation requested:", message.content);
+    const translateButton = new ActionRowBuilder().addComponents(
+  new ButtonBuilder()
+    .setCustomId(`translate_${message.id}`)
+    .setLabel("Choose Language")
+    .setEmoji("🌎")
+    .setStyle(ButtonStyle.Primary)
+);
+
+await message.reply({
+  content: "🌎 Want to translate this message? Tap below!",
+  components: [translateButton],
+});
   } catch (error) {
     console.error("Translation reaction error:", error);
   }
