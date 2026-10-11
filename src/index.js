@@ -217,6 +217,20 @@ if (
 
   return;
 }
+  // Handle translation language selection
+if (
+  interaction.isStringSelectMenu() &&
+  interaction.customId.startsWith("translate_select_")
+) {
+  const language = interaction.values[0];
+
+  await interaction.reply({
+    content: `🌎 You selected ${language.toUpperCase()}! Translation is being set up.`,
+    ephemeral: true,
+  });
+
+  return;
+}
 // Party RSVP buttons
 if (
   interaction.isButton() &&
