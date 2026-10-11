@@ -187,7 +187,7 @@ if (
   interaction.customId.startsWith("translate_")
 ) {
   const menu = new StringSelectMenuBuilder()
-    .setCustomId(interaction.customId.replace("translate_", "language_"))
+  .setCustomId(interaction.customId.replace("translate_", "translate_select_"))
     .setPlaceholder("🌎 Choose your language")
     .addOptions(
       { label: "English", value: "en", emoji: "🇺🇸" },
