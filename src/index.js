@@ -181,7 +181,42 @@ if (randomSticker) {
     });
     return;
   }
+// 🌎 Translation language menu
+if (
+  interaction.isButton() &&
+  interaction.customId.startsWith("translate_")
+) {
+  const menu = new StringSelectMenuBuilder()
+    .setCustomId(interaction.customId.replace("translate_", "language_"))
+    .setPlaceholder("🌎 Choose your language")
+    .addOptions(
+      { label: "English", value: "en", emoji: "🇺🇸" },
+      { label: "Spanish", value: "es", emoji: "🇲🇽" },
+      { label: "French", value: "fr", emoji: "🇫🇷" },
+      { label: "Portuguese", value: "pt", emoji: "🇧🇷" },
+      { label: "German", value: "de", emoji: "🇩🇪" },
+      { label: "Italian", value: "it", emoji: "🇮🇹" },
+      { label: "Arabic", value: "ar", emoji: "🇸🇦" },
+      { label: "Chinese", value: "zh", emoji: "🇨🇳" },
+      { label: "Japanese", value: "ja", emoji: "🇯🇵" },
+      { label: "Korean", value: "ko", emoji: "🇰🇷" },
+      { label: "Hindi", value: "hi", emoji: "🇮🇳" },
+      { label: "Russian", value: "ru", emoji: "🇷🇺" },
+      { label: "Tagalog", value: "tl", emoji: "🇵🇭" },
+      { label: "Vietnamese", value: "vi", emoji: "🇻🇳" },
+      { label: "Turkish", value: "tr", emoji: "🇹🇷" }
+    );
 
+  const row = new ActionRowBuilder().addComponents(menu);
+
+  await interaction.reply({
+    content: "🌎 Select the language you'd like!",
+    components: [row],
+    ephemeral: true,
+  });
+
+  return;
+}
 // Party RSVP buttons
 if (
   interaction.isButton() &&
