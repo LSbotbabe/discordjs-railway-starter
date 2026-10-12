@@ -357,15 +357,22 @@ if (
     party.going.push(promotedUser);
   }
 
-const names = ids =>
-  ids.length
-    ? ids.map(id => {
-        const member = interaction.guild.members.cache.get(id);
-        return member ? member.displayName : `User ${id}`;
-      }).join("\n")
-    : "Nobody yet";
+const names = async ids => {
+  if (!ids.length) return "Nobody yet";
 
-  const updatedFields = oldEmbed.fields.map(field => {
+  const members = await Promise.all(
+    ids.map(id =>
+      interaction.guild.members.fetch(id).catch(() => null)
+    )
+  );
+
+  return members
+    .map((member, i) =>
+      member ? member.displayName : `User ${ids[i]}`
+    )
+    .join("\n");
+};
+  const updatedFields = await Promise.all(oldEmbed.fields.map(async field => {
     if (field.name === "👥 Headcount") {
       return {
         name: field.name,
@@ -377,7 +384,7 @@ const names = ids =>
     if (field.name === "✅ Yes") {
       return {
         name: field.name,
-        value: names(party.going),
+        value: await names(party.going),
         inline: field.inline,
       };
     }
@@ -385,7 +392,7 @@ const names = ids =>
     if (field.name === "❓ Maybe") {
       return {
         name: field.name,
-        value: names(party.maybe),
+        value: await names(party.maybe),
         inline: field.inline,
       };
     }
@@ -393,22 +400,16 @@ const names = ids =>
     if (field.name === "⏳ Waitlist") {
       return {
         name: field.name,
-        value: names(party.waitlist),
+        value: await names(party.waitlist),
         inline: field.inline,
       };
     }
-if (field.name === "⏳ Waitlist") {
-  return {
-    name: field.name,
-    value: names(party.waitlist),
-    inline: field.inline,
-  };
-}
+
 
 if (field.name === "❌ Can't Go") {
   return {
     name: field.name,
-    value: names(party.declined),
+    value: await names(party.declined),
     inline: field.inline,
   };
 }
@@ -419,7 +420,7 @@ return {
   inline: field.inline,
 };
     
-  });
+  }));
 
   const updatedEmbed = {
     title: oldEmbed.title,
