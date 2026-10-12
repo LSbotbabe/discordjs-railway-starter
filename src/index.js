@@ -436,7 +436,15 @@ return {
     components: message.components,
   });
 
-  
+  try {
+  fs.writeFileSync(
+    RSVP_FILE,
+    JSON.stringify(Object.fromEntries(client.partyRSVPs), null, 2)
+  );
+  console.log("Party RSVPs saved successfully");
+} catch (error) {
+  console.error("Error saving party RSVPs:", error);
+}
   await interaction.followUp({
     content: responseMessage,
     ephemeral: true,
