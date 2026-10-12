@@ -12,7 +12,7 @@ StringSelectMenuBuilder,
   Partials,
   REST,
   Routes,
-const fs = require("fs");
+} = require("discord.js");
 const RSVP_FILE = "/data/party-rsvps.json";
 const token = process.env.DISCORD_TOKEN;
 if (!token) {
