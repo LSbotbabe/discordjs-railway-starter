@@ -43,6 +43,16 @@ const client = new Client({
 });
 client.commands = new Collection();
 client.partyRSVPs = new Map();
+
+try {
+  if (fs.existsSync(RSVP_FILE)) {
+    const saved = JSON.parse(fs.readFileSync(RSVP_FILE, "utf8"));
+    client.partyRSVPs = new Map(Object.entries(saved));
+    console.log("Party RSVPs loaded successfully!");
+  }
+} catch (error) {
+  console.error("Error loading party RSVPs:", error);
+}
 // Load every command file next to this one, so the working directory does not matter.
 const commandsDir = path.join(__dirname, "commands");
 const payload = [];
