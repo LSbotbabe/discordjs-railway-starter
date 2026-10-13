@@ -77,7 +77,114 @@ client.once(Events.ClientReady, async (c) => {
     console.error("Failed to register slash commands:", error.message);
   }
 });
+// 🎂 LS BOT BABE - AUTOMATIC BIRTHDAYS
+const BIRTHDAY_CHANNEL_ID = "1554976609910522028";
+const BIRTHDAY_FILE = "/data/birthdays.json";
+const BIRTHDAY_SENT_FILE = "/data/birthday-sent.json";
+let lastBirthdayCheck = "";
+let birthdayCheckRunning = false;
+async function checkBirthdays() {
+  const now = new Date();
 
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Los_Angeles",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(now);
+
+  const get = type =>
+    Number(parts.find(p => p.type === type).value);
+
+  const year = get("year");
+  const month = get("month");
+  const day = get("day");
+  const hour = get("hour");
+
+  if (hour < 8) return;
+
+  const today = `${year}-${month}-${day}`;
+if (lastBirthdayCheck === today) return;
+if (birthdayCheckRunning) return;
+birthdayCheckRunning = true;
+
+  if (!fs.existsSync(BIRTHDAY_FILE)) {
+  birthdayCheckRunning = false;
+  return;
+}
+
+  try {
+    const birthdays = JSON.parse(
+      fs.readFileSync(BIRTHDAY_FILE, "utf8")
+    );
+
+    const channel = await client.channels.fetch(
+      BIRTHDAY_CHANNEL_ID
+    );
+
+    if (!channel?.isTextBased()) return;
+
+   const sentUsers = new Set(
+  fs.existsSync(BIRTHDAY_SENT_FILE)
+    ? (() => {
+        const saved = JSON.parse(
+          fs.readFileSync(BIRTHDAY_SENT_FILE, "utf8")
+        );
+        return saved.date === today ? (saved.users || []) : [];
+      })()
+    : []
+);
+    for (const [userId, birthday] of Object.entries(birthdays)) {
+      if (birthday.month !== month || birthday.day !== day) {
+        continue;
+      }
+if (sentUsers.has(userId)) continue;
+      const message =
+        "🎂IT'S YOUR SPECIAL DAY!💖\n\n" +
+        "🎉✨Attention, Lit Sessions family!!✨🎉\n" +
+        `Today we're celebrating our very own <@${userId}>!!🥳🎈\n` +
+        "💕Another year older, another year\n" +
+        "more fabulous!\n" +
+        "May your day be filled with love, laughter, blessings, good vibes, and a whole lot of <:Lit:1544543069217620029> moments!🔥🥂\n" +
+        "🎁Everyone show our birthday star\n" +
+        "some LOVE!!\n" +
+        "💋 XOXO, <:LS:1544525450574041088> Bot Babe 💋";
+
+      await channel.send({
+        content: message,
+        allowedMentions: { users: [userId] }
+      });
+      sentUsers.add(userId);
+fs.writeFileSync(
+  BIRTHDAY_SENT_FILE,
+  JSON.stringify({
+    date: today,
+    users: [...sentUsers]
+  })
+);
+    }
+
+  fs.writeFileSync(
+  BIRTHDAY_SENT_FILE,
+  JSON.stringify({
+    date: today,
+    users: [...sentUsers]
+  })
+);
+lastBirthdayCheck = today;
+  } catch (error) {
+  console.error("Birthday announcement error:", error);
+} finally {
+  birthdayCheckRunning = false;
+}
+}
+
+client.once(Events.ClientReady, () => {
+  checkBirthdays();
+  setInterval(checkBirthdays, 60 * 1000);
+});
 client.on(Events.InteractionCreate, async (interaction) => {
   // Slash commands
   if (interaction.isChatInputCommand()) {
