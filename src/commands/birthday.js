@@ -2,7 +2,7 @@ const { SlashCommandBuilder, MessageFlags } = require("discord.js");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const file = path.join(process.cwd(), "birthdays.json");
+const file = "/data/birthdays.json";
 
 function getBirthdays() {
   if (!fs.existsSync(file)) return {};
