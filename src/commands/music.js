@@ -32,6 +32,8 @@ function getManager(client) {
     console.log("Lavalink ready:", name);
   });
 
+manager.on("debug", (name, info) => console.log("Lavalink debug:", name, info));
+  
   manager.on("error", (name, error) => {
     console.error("Lavalink error:", name, error);
   });
