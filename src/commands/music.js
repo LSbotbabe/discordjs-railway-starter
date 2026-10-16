@@ -16,7 +16,7 @@ function getManager(client) {
     throw new Error("Missing Lavalink settings in Railway");
   }
 
-  const secure = process.env.LAVALINK_SECURE === "true";
+  const secure = false;
 
   const manager = new Shoukaku(
     new Connectors.DiscordJS(client),
