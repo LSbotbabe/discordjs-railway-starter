@@ -30,6 +30,7 @@ console.log("LS Music: password present:", Boolean(password));
       secure
     }]
   );
+
 console.log("LS Music: node count:", manager.nodes.size);
   manager.on("ready", name => {
     console.log("Lavalink ready:", name);
