@@ -18,6 +18,9 @@ function getManager(client) {
 
   const secure = false;
 
+  console.log("LS Music: host configured:", host);
+console.log("LS Music: port configured:", port);
+console.log("LS Music: password present:", Boolean(password));
   const manager = new Shoukaku(
     new Connectors.DiscordJS(client),
     [{
