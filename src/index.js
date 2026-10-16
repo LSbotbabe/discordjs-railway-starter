@@ -674,10 +674,8 @@ await message.reply({
   }
 });
 
-client.once(Events.ClientReady, () => {
-  const music = require("./commands/music.js");
-  music.initializeMusic(client);
-});
+const music = require("./commands/music.js");
+music.initializeMusic(client);
 
 client.login(token).catch((error) => {
   if (error?.code === "TokenInvalid" || /token/i.test(error?.message ?? "")) {
