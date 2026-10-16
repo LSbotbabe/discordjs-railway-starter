@@ -181,7 +181,13 @@ async function playNext(guildId) {
   }
 }
 
+function initializeMusic(client) {
+  return getManager(client);
+}
+
+
 module.exports = {
+  initializeMusic,
   data: new SlashCommandBuilder()
     .setName("music")
     .setDescription("LS Bot Babe music controls")
