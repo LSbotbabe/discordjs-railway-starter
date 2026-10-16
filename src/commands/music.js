@@ -53,7 +53,7 @@ manager.on("debug", (name, info) => console.log("Lavalink debug:", name, info));
 async function getNode(manager) {
   console.log("LS Music node states:", [...manager.nodes.values()].map(node => ({ name: node.name, state: node.state })));
   const connected = () =>
-  [...manager.nodes.values()].find(node => node.state === 2);
+  [...manager.nodes.values()].find(node => node.state === 1);
 
   if (connected()) return connected();
 
