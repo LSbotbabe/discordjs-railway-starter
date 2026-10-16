@@ -184,7 +184,10 @@ async function playNext(guildId) {
 }
 
 function initializeMusic(client) {
-  return getManager(client);
+  console.log("LS Music: initialization started");
+  const manager = getManager(client);
+  console.log("LS Music: nodes created:", [...manager.nodes.keys()]);
+  return manager;
 }
 
 
