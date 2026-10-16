@@ -187,6 +187,10 @@ function initializeMusic(client) {
   console.log("LS Music: initialization started");
   const manager = getManager(client);
   console.log("LS Music: nodes created:", [...manager.nodes.keys()]);
+setTimeout(() => {
+  console.log("LS Music: nodes after 5 seconds:", [...manager.nodes.keys()]);
+}, 5000);
+  
   return manager;
 }
 
