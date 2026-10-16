@@ -97,6 +97,7 @@ async function findSong(node, query) {
     : `ytsearch:${query}`;
 
   const result = await node.rest.resolve(identifier);
+  console.log("LS Music search result:", JSON.stringify(result));
 
   if (!result || result.loadType === "error") {
     throw new Error("Lavalink could not load the song");
