@@ -46,7 +46,7 @@ function getManager(client) {
 
 async function getNode(manager) {
   const connected = () =>
-    [...manager.nodes.values()].find(node => node.state === 1);
+  [...manager.nodes.values()].find(node => node.state === 2);
 
   if (connected()) return connected();
 
