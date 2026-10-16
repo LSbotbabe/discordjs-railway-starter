@@ -39,7 +39,7 @@ function getManager(client) {
   manager.on("close", (name, code, reason) => {
     console.log("Lavalink closed:", name, code, reason);
   });
-
+  manager.connect();
   managers.set(client, manager);
   return manager;
 }
