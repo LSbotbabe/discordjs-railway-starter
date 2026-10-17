@@ -94,7 +94,7 @@ async function getNode(manager) {
 async function findSong(node, query) {
   const identifier = /^https?:\/\//i.test(query)
     ? query
-    : `ytsearch:${query}`;
+  : `scsearch:${query}`;
 
   const result = await node.rest.resolve(identifier);
   console.log("LS Music search result:", JSON.stringify(result));
