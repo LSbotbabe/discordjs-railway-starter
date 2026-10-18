@@ -130,10 +130,26 @@ async function playNext(guildId) {
 
   if (!queue || queue.starting) return;
 
+  
   if (!queue.songs.length) {
     queue.playing = false;
+
+    setTimeout(async () => {
+        if (queues.get(guildId) !== queue) return;
+        if (queue.playing || queue.starting || queue.songs.length) return;
+
+        try {
+            if (queue.player) {
+                await queue.player.destroy();
+            }
+            queues.delete(guildId);
+        } catch (error) {
+            console.error("Auto-disconnect error:", error);
+        }
+    }, 5 * 60 * 1000);
+
     return;
-  }
+}
 
   queue.starting = true;
 
