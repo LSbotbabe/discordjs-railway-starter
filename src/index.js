@@ -27,6 +27,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.MessageContent,
@@ -677,6 +678,45 @@ await message.reply({
 const music = require("./commands/music.js");
 music.initializeMusic(client);
 
+// LS Bot Babe - Member Departure Logs
+client.on(Events.GuildMemberRemove, async (member) => {
+  try {
+    const channel = await member.guild.channels.fetch(
+      "1545978708131709069"
+    );
+
+    if (!channel || !channel.isTextBased()) return;
+
+    await channel.send({
+      embeds: [{
+        color: 0xFF69B4,
+        title: "💔 Member Left LS",
+        description: `👋 **${member.user.username}** has left the server.`,
+        thumbnail: {
+          url: member.user.displayAvatarURL()
+        },
+        fields: [
+          {
+            name: "🆔 User ID",
+            value: member.id
+          },
+          {
+            name: "👥 Members Remaining",
+            value: `${member.guild.memberCount}`
+          }
+        ],
+        timestamp: new Date().toISOString(),
+        footer: {
+          text: "LS Bot Babe • Member Departures"
+        }
+      }]
+    });
+  } catch (error) {
+    console.error("Member departure log error:", error);
+  }
+});
+
+
 client.login(token).catch((error) => {
   if (error?.code === "TokenInvalid" || /token/i.test(error?.message ?? "")) {
     console.error(
@@ -687,3 +727,5 @@ client.login(token).catch((error) => {
   }
   process.exit(1);
 });
+
+
