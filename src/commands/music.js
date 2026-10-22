@@ -155,7 +155,8 @@ async function playNext(guildId) {
 
   try {
     if (!queue.player) {
-      queue.player = await queue.manager.joinVoiceChannel({
+      queue.player = queue.manager.players.get(guildId)
+  || await queue.manager.joinVoiceChannel({
         guildId,
         channelId: queue.channelId,
         shardId: queue.shardId
