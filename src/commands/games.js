@@ -103,7 +103,7 @@ async function handleMessage(message) {
 
     const result = await ai.chat.completions.create({
       model: "gpt-5-nano",
-      max_completion_tokens: 120,
+      max_completion_tokens: 500,
       messages: [
         { role: "system", content: personality },
         ...history,
