@@ -17,7 +17,14 @@ let dailyReplies = 0;
 let currentDay = new Date().toISOString().slice(0, 10);
 let lastReply = 0;
 
-const conversationHistory = [];
+// 💕 Separate conversation history for each member
+const conversationHistory = new Map();
+
+// 💕 Track active conversations by member
+const activeConversations = new Map();
+
+// Keep conversations active for 5 minutes
+const CONVERSATION_TIMEOUT = 5 * 60 * 1000;
 
 // 💖 LS BOT BABE'S PERSONALITY
 const personality = `
@@ -88,9 +95,20 @@ async function handleMessage(message) {
   // 👀 Occasionally join conversations
   const joinConversation = Math.random() < 0.12;
 
-  if (!directlyAddressed && !greeting && !joinConversation) {
-    return;
-  }
+  // 💕 Check whether this member is continuing a conversation
+const userId = message.author.id;
+const activeUntil = activeConversations.get(userId) || 0;
+
+const continuingConversation = now < activeUntil;
+
+  if (
+  !directlyAddressed &&
+  !greeting &&
+  !joinConversation &&
+  !continuingConversation
+) {
+  return;
+}
 
   // Reserve a reply slot before the API request
   lastReply = now;
@@ -99,7 +117,9 @@ async function handleMessage(message) {
   try {
     await message.channel.sendTyping();
 
-    const history = conversationHistory.slice(-MAX_HISTORY);
+    const history = (
+  conversationHistory.get(message.author.id) || []
+).slice(-MAX_HISTORY);
 
     const result = await ai.chat.completions.create({
       model: "gpt-5-nano",
@@ -118,24 +138,31 @@ async function handleMessage(message) {
 
     if (!reply) return;
 
-    conversationHistory.push(
-      {
-        role: "user",
-        content: `${message.author.username}: ${content}`,
-      },
-      {
-        role: "assistant",
-        content: reply,
-      }
-    );
+    // 💕 Save this member's conversation separately
+const updatedHistory = [
+  ...history,
+  {
+    role: "user",
+    content: `${message.author.username}: ${content}`,
+  },
+  {
+    role: "assistant",
+    content: reply,
+  },
+];
 
-    if (conversationHistory.length > MAX_HISTORY) {
-      conversationHistory.splice(
-        0,
-        conversationHistory.length - MAX_HISTORY
-      );
-    }
+// Keep only the most recent messages
+conversationHistory.set(
+  message.author.id,
+  updatedHistory.slice(-MAX_HISTORY)
+);
 
+    // 💕 Keep this member's conversation active for 5 minutes
+activeConversations.set(
+  message.author.id,
+  Date.now() + CONVERSATION_TIMEOUT
+);
+    
     await message.reply({
       content: reply.slice(0, 1900),
       allowedMentions: { repliedUser: false, parse: [] },
