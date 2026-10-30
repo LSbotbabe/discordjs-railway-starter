@@ -716,6 +716,21 @@ client.on(Events.GuildMemberRemove, async (member) => {
   }
 });
 
+// 🎮 LS BOT BABE GAME NIGHT
+const games = require("./commands/games.js");
+
+client.on(Events.MessageCreate, async (message) => {
+  if (message.author.bot) return;
+  if (message.channel.id !== "1565829843550085270") return;
+
+  try {
+    await games.handleMessage(message);
+  } catch (error) {
+    console.error("LS Game Night error:", error);
+  }
+});
+
+
 
 client.login(token).catch((error) => {
   if (error?.code === "TokenInvalid" || /token/i.test(error?.message ?? "")) {
