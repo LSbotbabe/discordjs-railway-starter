@@ -9,8 +9,8 @@ const {
 const ALLOWED_ROLES = [
   "Server Owner",
   "LS Party Ambassador",
-  "LS Party Host",
-  "LS co-Host",
+  "Oficial LS Host",
+  "host",
   "B-Day party planner",
 ];
 
