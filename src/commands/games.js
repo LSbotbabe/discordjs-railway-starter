@@ -1,169 +1,160 @@
-// 💋 LS BOT BABE — GAME NIGHT PERSONALITY
+// 💋 LS BOT BABE — AI CONVERSATION SYSTEM
+
+const OpenAI = require("openai");
+
+const ai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 const GAME_CHANNEL_ID = "1565829843550085270";
 
-// 🎀 PERSONALITY RESPONSES
-const responses = {
+// 💰 Usage safeguards
+const MAX_DAILY_REPLIES = 100;
+const COOLDOWN_MS = 15000;
+const MAX_HISTORY = 12;
 
-  // 💋 GREETINGS
-  greetings: [
-    "Heyyyy boo! 💕 What's good?!",
-    "Look who decided to bless us with their presence! 👀",
-    "Hiiii bestie! Come sit, we got tea! ☕",
-    "Heyyyy gorgeous! 💋 Ready for some chaos?",
-    "Well, well, well! Look who showed up! 😂🔥",
-    "Hey baby! 💖 Welcome to the madness!",
-    "OOP! My favorite troublemaker is here! 😭💕",
-    "Hiiii love! 💕 What are we getting into today?"
-  ],
+let dailyReplies = 0;
+let currentDay = new Date().toISOString().slice(0, 10);
+let lastReply = 0;
 
-  // ☕ MESSY & SASSY
-  messy: [
-    "OOP! 👀 Now why would you expose yourself like that?!",
-    "Not you telling everybody's business! 😭",
-    "The tea is HOT and I'm seated! ☕🔥",
-    "I'm not saying you're messy, but the evidence is giving messy! 💀",
-    "BABYYYY! 👀 You can't just say that and disappear!",
-    "Hold on! Let me grab my popcorn! 🍿😂",
-    "Somebody spill the rest because I'm INVESTED! ☕",
-    "Now why does this sound like a whole reality show?! 😭",
-    "I wasn't being nosy, but now I need details! 💋"
-  ],
+const conversationHistory = [];
 
-  // 😂 FUNNY REACTIONS
-  funny: [
-    "Somebody come get their friend! 😭",
-    "I just KNOW you didn't type that with a straight face! 💀",
-    "The way y'all act in here needs to be studied! 😂",
-    "SCREAMINGGGG! 😭😂",
-    "NOT ME CRYINGGG! 💀🤣",
-    "I cannot deal with this family! 😭💕",
-    "WHO RAISED Y'ALL?! 😂",
-    "I'm logging off emotionally! 😭💀",
-    "This server needs adult supervision! 😂🔥"
-  ],
+// 💖 LS BOT BABE'S PERSONALITY
+const personality = `
+You are LS Bot Babe, the official game host and
+fun-loving member of the Lit Sessions Discord server.
 
-  // 💕 SWEET RESPONSES
-  sweet: [
-    "Awww! 🥹💕 I love my LS family!",
-    "You're such a sweetheart! 💖",
-    "Sending you virtual hugs, boo! 🫶",
-    "You deserve all the love in the world! 💕",
-    "Don't let anybody dim your sparkle, baby! ✨",
-    "You're appreciated more than you know! 💖",
-    "That's my LS family right there! 🥹",
-    "Nothing but love and good vibes for you! 💋"
-  ],
+PERSONALITY:
+- Sweet, funny, sassy, sarcastic, playful, and confident.
+- Sometimes messy and dramatic in a humorous way.
+- Occasionally give lighthearted, friendly roasts.
+- Be supportive when someone is genuinely upset.
+- Talk naturally like a real participant in Discord.
+- Use emojis naturally: 💋💕😂😭🔥☕👀💖
+- Keep responses short, usually 1–3 sentences.
+- Avoid repeating catchphrases.
+- Never be cruel, discriminatory, or genuinely insulting.
+- Don't pretend to know private information about members.
 
-  // 😈 PLAYFUL ROASTS
-  savage: [
-    "Not you being confidently incorrect! 😭",
-    "Bestie, that answer needs a refund! 💀",
-    "I'm gonna give you a second chance to rethink that! 😂",
-    "BABYYYY! The math ain't mathing! 😭",
-    "Who gave you permission to be this loud AND wrong?! 💀",
-    "I'm not judging... okay maybe a little! 👀😂",
-    "You really woke up and chose chaos today! 😭🔥",
-    "Somebody take the keyboard away! 😂",
-    "I'm gonna pretend I didn't read that! 💋"
-  ],
+CONVERSATION:
+- Understand what members are actually saying.
+- Respond to their specific message.
+- Ask follow-up questions when appropriate.
+- Remember the recent conversation provided to you.
+- Don't turn every conversation into a game.
+- Don't claim someone won a game unless the game
+  system has confirmed it.
 
-  // 🔥 GAME HOST REACTIONS
-  gameHost: [
-    "OOOH! We got a winner! 🏆",
-    "Y'all better step it up! 👀",
-    "The competition is getting PERSONAL! 😭🔥",
-    "Somebody check the scoreboard because BABYYYY! 💋",
-    "Don't get quiet now! Where's that confidence?! 😂",
-    "The LS family came to PLAY today! 🔥",
-    "Who wants to be our next champion?! 👑",
-    "Okayyyy! I see we got some competition! 💎",
-    "This game is getting SPICY! 😈🔥"
-  ],
+You are entertaining, welcoming, and full of personality!
+`;
 
-  // 💋 GENERAL CONVERSATION
-  general: [
-    "GIRLLLL! 😭💀 You really just said that?!",
-    "OOP! 👀☕ Somebody spill the rest!",
-    "BABYYYY! 😂🔥 I'm listening!",
-    "Not you being messy in my game room! 💋😂",
-    "The way I just GASPED! 😭",
-    "Tell me more, bestie! 👀💕",
-    "Now THAT'S interesting! 💋",
-    "Wait a minute! We need to discuss this! 😂",
-    "I'm listening, boo! ☕💕"
-  ]
-};
+function resetDailyCount() {
+  const today = new Date().toISOString().slice(0, 10);
 
-// 🎲 PICK RANDOM RESPONSE
-function randomResponse(list) {
-  return list[Math.floor(Math.random() * list.length)];
+  if (today !== currentDay) {
+    currentDay = today;
+    dailyReplies = 0;
+  }
 }
 
-// 💖 RESPOND TO MEMBERS
 async function handleMessage(message) {
   if (message.author.bot) return;
   if (message.channel.id !== GAME_CHANNEL_ID) return;
 
-  const text = message.content.toLowerCase().trim();
+  const content = message.content.trim();
+  if (!content) return;
 
-  if (!text) return;
+  resetDailyCount();
 
-  let category = null;
+  if (dailyReplies >= MAX_DAILY_REPLIES) return;
 
-  // Greetings
-  if (/\b(hi|hello|hey|heyyy|heyyyy)\b/.test(text)) {
-    category = "greetings";
+  const now = Date.now();
+  if (now - lastReply < COOLDOWN_MS) return;
+
+  const text = content.toLowerCase();
+
+  // 💬 Respond when directly addressed
+  const directlyAddressed =
+    message.mentions.has(message.client.user) ||
+    /\b(ls bot babe|bot babe|ls babe)\b/i.test(text) ||
+    message.reference?.messageId &&
+      (await isReplyToBot(message));
+
+  // 👋 Recognize greetings
+  const greeting =
+    /^(hi|hello|hey|heyy|heyyy|good morning|good evening|good night)[!?. ]*$/i
+      .test(content);
+
+  // 👀 Occasionally join conversations
+  const joinConversation = Math.random() < 0.12;
+
+  if (!directlyAddressed && !greeting && !joinConversation) {
+    return;
   }
 
-  // Laughter
-  else if (/\b(lol|lmao|lmfao|haha|hahaha)\b/.test(text)) {
-    category = "funny";
-  }
+  // Reserve a reply slot before the API request
+  lastReply = now;
+  dailyReplies++;
 
-  // Sweet messages
-  else if (
-    /\b(love|sweet|beautiful|thank you|thanks|hug)\b/.test(text)
-  ) {
-    category = "sweet";
-  }
+  try {
+    await message.channel.sendTyping();
 
-  // Tea and gossip
-  else if (
-    /\b(tea|gossip|drama|messy|spill)\b/.test(text)
-  ) {
-    category = "messy";
-  }
+    const history = conversationHistory.slice(-MAX_HISTORY);
 
-  // Playful teasing
-  else if (
-    /\b(roast|savage|wrong|clown)\b/.test(text)
-  ) {
-    category = "savage";
-  }
+    const result = await ai.chat.completions.create({
+      model: "gpt-4.1-nano",
+      max_completion_tokens: 120,
+      messages: [
+        { role: "system", content: personality },
+        ...history,
+        {
+          role: "user",
+          content: `${message.author.username}: ${content}`,
+        },
+      ],
+    });
 
-  // Game-related messages
-  else if (
-    /\b(game|play|winner|score|challenge)\b/.test(text)
-  ) {
-    category = "gameHost";
-  }
+    const reply = result.choices[0]?.message?.content?.trim();
 
-  // Talking directly to LS Bot Babe
-  else if (
-    text.includes("bot babe") ||
-    text.includes("ls babe")
-  ) {
-    category = "general";
-  }
+    if (!reply) return;
 
-  if (category) {
-    await message.reply(randomResponse(responses[category]));
+    conversationHistory.push(
+      {
+        role: "user",
+        content: `${message.author.username}: ${content}`,
+      },
+      {
+        role: "assistant",
+        content: reply,
+      }
+    );
+
+    if (conversationHistory.length > MAX_HISTORY) {
+      conversationHistory.splice(
+        0,
+        conversationHistory.length - MAX_HISTORY
+      );
+    }
+
+    await message.reply({
+      content: reply.slice(0, 1900),
+      allowedMentions: { repliedUser: false, parse: [] },
+    });
+
+  } catch (error) {
+    console.error("LS Bot Babe AI error:", error.message);
+  }
+}
+
+async function isReplyToBot(message) {
+  try {
+    const original = await message.fetchReference();
+    return original.author.id === message.client.user.id;
+  } catch {
+    return false;
   }
 }
 
 module.exports = {
   handleMessage,
-  responses,
-  randomResponse
 };
