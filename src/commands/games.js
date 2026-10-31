@@ -19,6 +19,9 @@ let lastReply = 0;
 
 // 💕 Separate conversation history for each member
 const conversationHistory = new Map();
+// 💕 Prevent overlapping AI replies from the same member
+const userReplyCooldowns = new Map();
+const USER_COOLDOWN_MS = 2000;
 
 // 💕 Track active conversations by member
 const activeConversations = new Map();
@@ -76,8 +79,20 @@ async function handleMessage(message) {
   if (dailyReplies >= MAX_DAILY_REPLIES) return;
 
   const now = Date.now();
-  if (now - lastReply < COOLDOWN_MS) return;
+  // 💕 Allow active conversations without the 15-second cooldown
+const isActiveChat =
+  (activeConversations.get(message.author.id) || 0) > now;
 
+if (!isActiveChat && now - lastReply < COOLDOWN_MS) return;
+
+// 💕 Limit each member to one AI request every 2 seconds
+const userId = message.author.id;
+const lastUserReply = userReplyCooldowns.get(userId) || 0;
+
+if (now - lastUserReply < USER_COOLDOWN_MS) return;
+
+
+  
   const text = content.toLowerCase();
 
   // 💬 Respond when directly addressed
@@ -96,7 +111,7 @@ async function handleMessage(message) {
   const joinConversation = Math.random() < 0.12;
 
   // 💕 Check whether this member is continuing a conversation
-const userId = message.author.id;
+
 const activeUntil = activeConversations.get(userId) || 0;
 
 const continuingConversation = now < activeUntil;
@@ -113,6 +128,9 @@ const continuingConversation = now < activeUntil;
   // Reserve a reply slot before the API request
   lastReply = now;
   dailyReplies++;
+
+  // 💕 Track when this member starts an AI request
+userReplyCooldowns.set(userId, now);
 
   try {
     await message.channel.sendTyping();
