@@ -134,6 +134,12 @@ const continuingConversation = now < activeUntil;
       ],
     });
 
+console.log("LS AI response status:", {
+  finishReason: result.choices[0]?.finish_reason,
+  hasContent: !!result.choices[0]?.message?.content,
+  outputTokens: result.usage?.completion_tokens
+});
+    
     const reply = result.choices[0]?.message?.content?.trim();
 
     if (!reply) return;
