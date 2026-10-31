@@ -140,8 +140,9 @@ userReplyCooldowns.set(userId, now);
 ).slice(-MAX_HISTORY);
 
     const result = await ai.chat.completions.create({
-      model: "gpt-5-nano",
-      max_completion_tokens: 500,
+    model: "gpt-5-nano",
+reasoning_effort: "minimal",
+max_completion_tokens: 500,
       messages: [
         { role: "system", content: personality },
         ...history,
