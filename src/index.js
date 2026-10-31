@@ -13,6 +13,7 @@ StringSelectMenuBuilder,
   REST,
   Routes,
 } = require("discord.js");
+const gameManager = require("./commands/gameManager");
 const RSVP_FILE = "/data/party-rsvps.json";
 const token = process.env.DISCORD_TOKEN;
 if (!token) {
