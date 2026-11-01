@@ -282,7 +282,9 @@ module.exports = {
         queue.songs.push(song);
 
         if (!queue.playing && !queue.starting) {
-          await playNext(guildId);
+        playNext(guildId).catch(error => {
+  console.error("LS Music playback failed:", error);
+});
 
           return interaction.editReply(
             `🎶 Loading: **${song.title}**`
