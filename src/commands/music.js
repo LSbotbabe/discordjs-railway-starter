@@ -85,9 +85,20 @@ async function playNext(guildId) {
     let resource;
 
 if (song.isTest) {
-  resource = createAudioResource(song.url, {
+  const response = await fetch(song.url);
+
+  if (!response.ok) {
+    throw new Error(`MP3 download failed: ${response.status}`);
+  }
+
+  const { Readable } = require("node:stream");
+  const audioStream = Readable.fromWeb(response.body);
+
+  resource = createAudioResource(audioStream, {
     inlineVolume: true
   });
+
+    
 } else {
   const stream = await play.stream(song.url);
 
