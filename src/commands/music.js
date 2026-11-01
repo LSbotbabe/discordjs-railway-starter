@@ -12,6 +12,7 @@ const {
 } = require("@discordjs/voice");
 
 const play = require("@iamtraction/play-dl");
+const TEST_AUDIO_URL = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
 
 const queues = new Map();
 
@@ -20,6 +21,15 @@ function initializeMusic(client) {
 }
 
 async function findSong(query) {
+
+if (query.toLowerCase() === "test") {
+  return {
+    title: "LS Bot Babe Audio Test",
+    url: TEST_AUDIO_URL,
+    isTest: true
+  };
+}
+  
   let url = query;
   let title = query;
 
@@ -72,12 +82,20 @@ async function playNext(guildId) {
 
     console.log("LS Music loading:", song.title);
 
-    const stream = await play.stream(song.url);
+    let resource;
 
-    const resource = createAudioResource(stream.stream, {
-      inputType: stream.type,
-      inlineVolume: true
-    });
+if (song.isTest) {
+  resource = createAudioResource(song.url, {
+    inlineVolume: true
+  });
+} else {
+  const stream = await play.stream(song.url);
+
+  resource = createAudioResource(stream.stream, {
+    inputType: stream.type,
+    inlineVolume: true
+  });
+}
 
     resource.volume.setVolume(1);
 
