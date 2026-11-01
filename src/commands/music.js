@@ -1,128 +1,46 @@
-
 const { SlashCommandBuilder } = require("discord.js");
-const { Shoukaku, Connectors } = require("shoukaku");
+
+const {
+  joinVoiceChannel,
+  createAudioPlayer,
+  createAudioResource,
+  AudioPlayerStatus,
+  VoiceConnectionStatus,
+  entersState,
+  NoSubscriberBehavior,
+  getVoiceConnection
+} = require("@discordjs/voice");
+
+const play = require("@iamtraction/play-dl");
 
 const queues = new Map();
-const managers = new WeakMap();
 
-function getManager(client) {
-  if (managers.has(client)) return managers.get(client);
-
-  const host = process.env.LAVALINK_HOST;
-  const port = process.env.LAVALINK_PORT || "2333";
-  const password = process.env.LAVALINK_PASSWORD;
-
-  if (!host || !password) {
-    throw new Error("Missing Lavalink settings in Railway");
-  }
-
-  const secure = false;
-
-  console.log("LS Music: host configured:", host);
-console.log("LS Music: port configured:", port);
-console.log("LS Music: password present:", Boolean(password));
-  const manager = new Shoukaku(
-    new Connectors.DiscordJS(client),
-    [{
-      name: "LS-Lavalink",
-      url: `${host}:${port}`,
-      auth: password,
-      secure
-    }]
-  );
-
-console.log("LS Music: node count:", manager.nodes.size);
-  manager.on("ready", name => {
-    console.log("Lavalink ready:", name);
-  });
-
-manager.on("debug", (name, info) => console.log("Lavalink debug:", name, info));
-  
-  manager.on("error", (name, error) => {
-    console.error("Lavalink error:", name, error);
-  });
-
-  manager.on("close", (name, code, reason) => {
-    console.log("Lavalink closed:", name, code, reason);
-  });
-  
-  managers.set(client, manager);
-  return manager;
+function initializeMusic(client) {
+  console.log("LS Music: Direct voice playback initialized");
 }
 
-async function getNode(manager) {
-  console.log("LS Music node states:", [...manager.nodes.values()].map(node => ({ name: node.name, state: node.state })));
-  const connected = () =>
-  [...manager.nodes.values()].find(node => node.state === 1);
+async function findSong(query) {
+  let url = query;
+  let title = query;
 
-  if (connected()) return connected();
+  if (!/^https?:\/\//i.test(query)) {
+    const results = await play.search(query, {
+      limit: 1,
+      source: { youtube: "video" }
+    });
 
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      cleanup();
-      reject(new Error("Lavalink connection timed out"));
-    }, 20000);
-
-    function cleanup() {
-      clearTimeout(timeout);
-      manager.off("ready", onReady);
-      manager.off("error", onError);
+    if (!results.length) {
+      throw new Error("No songs found.");
     }
 
-    function onReady() {
-      const node = connected();
-      if (!node) return;
-      cleanup();
-      resolve(node);
-    }
-
-    function onError(name, error) {
-      cleanup();
-      reject(error || new Error(`Lavalink error: ${name}`));
-    }
-
-    manager.on("ready", onReady);
-    manager.on("error", onError);
-
-    if (connected()) {
-      cleanup();
-      resolve(connected());
-    }
-  });
-}
-
-async function findSong(node, query) {
-  const identifier = /^https?:\/\//i.test(query)
-    ? query
-  : `ytsearch:${query}`;
-
-  const result = await node.rest.resolve(identifier);
-  console.log("LS Music search result:", JSON.stringify(result));
-
-  if (!result || result.loadType === "error") {
-    throw new Error("Lavalink could not load the song");
+    url = results[0].url;
+    title = results[0].title;
+  } else {
+    const info = await play.video_info(url);
+    title = info.video_details.title;
   }
 
-  let tracks = [];
-
-  if (Array.isArray(result.data)) {
-    tracks = result.data;
-  } else if (result.data?.tracks) {
-    tracks = result.data.tracks;
-  } else if (result.data?.encoded) {
-    tracks = [result.data];
-  }
-
-  if (!tracks.length) {
-    throw new Error("No playable tracks found");
-  }
-
-  const track = tracks[0];
-
-  return {
-    title: track.info?.title || "Unknown song",
-    encoded: track.encoded || track.track
-  };
+  return { title, url };
 }
 
 async function playNext(guildId) {
@@ -130,96 +48,129 @@ async function playNext(guildId) {
 
   if (!queue || queue.starting) return;
 
-  
   if (!queue.songs.length) {
     queue.playing = false;
 
-    setTimeout(async () => {
-        if (queues.get(guildId) !== queue) return;
-        if (queue.playing || queue.starting || queue.songs.length) return;
-
-        try {
-            if (queue.player) {
-                await queue.player.destroy();
-            }
-            queues.delete(guildId);
-        } catch (error) {
-            console.error("Auto-disconnect error:", error);
-        }
+    queue.timer = setTimeout(() => {
+      if (
+        queues.get(guildId) === queue &&
+        !queue.playing &&
+        !queue.songs.length
+      ) {
+        queue.connection.destroy();
+        queues.delete(guildId);
+      }
     }, 5 * 60 * 1000);
 
     return;
-}
+  }
 
   queue.starting = true;
 
   try {
-    if (!queue.player) {
-      queue.player = queue.manager.players.get(guildId)
-  || await queue.manager.joinVoiceChannel({
-        guildId,
-        channelId: queue.channelId,
-        shardId: queue.shardId
-      });
-
-      queue.player.on("end", data => {
-        if (queues.get(guildId) !== queue) return;
-
-        if (data?.reason === "replaced") return;
-
-        queue.songs.shift();
-        queue.playing = false;
-
-        playNext(guildId).catch(error => {
-          console.error("Next song error:", error);
-        });
-      });
-
-      queue.player.on("exception", error => {
-        console.error("Track exception:", error);
-      });
-
-      queue.player.on("closed", () => {
-        console.log("Voice connection closed:", guildId);
-
-        if (queues.get(guildId) === queue) {
-          queues.delete(guildId);
-        }
-      });
-    }
-
     const song = queue.songs[0];
 
-    await queue.player.playTrack({
-      track: { encoded: song.encoded }
+    console.log("LS Music loading:", song.title);
+
+    const stream = await play.stream(song.url);
+
+    const resource = createAudioResource(stream.stream, {
+      inputType: stream.type,
+      inlineVolume: true
     });
 
+    resource.volume.setVolume(1);
+
+    queue.player.play(resource);
     queue.playing = true;
-    console.log("Playback requested:", song.title);
+
+    console.log("LS Music playback started:", song.title);
 
   } catch (error) {
-    console.error("Playback failed:", error);
+    console.error("LS Music playback error:", error);
+
+    queue.songs.shift();
     queue.playing = false;
-    throw error;
+
+    setTimeout(() => {
+      playNext(guildId).catch(console.error);
+    }, 1000);
+
   } finally {
     queue.starting = false;
   }
 }
 
-function initializeMusic(client) {
-  console.log("LS Music: initialization started");
-  const manager = getManager(client);
-  console.log("LS Music: nodes created:", [...manager.nodes.keys()]);
-setTimeout(() => {
-  console.log("LS Music: nodes after 5 seconds:", [...manager.nodes.keys()]);
-}, 5000);
-  
-  return manager;
-}
+async function createQueue(interaction, channel) {
+  const guildId = interaction.guildId;
 
+  const connection = joinVoiceChannel({
+    channelId: channel.id,
+    guildId,
+    adapterCreator: interaction.guild.voiceAdapterCreator,
+    selfDeaf: true
+  });
+
+  await entersState(
+    connection,
+    VoiceConnectionStatus.Ready,
+    20000
+  );
+
+  const player = createAudioPlayer({
+    behaviors: {
+      noSubscriber: NoSubscriberBehavior.Pause
+    }
+  });
+
+  connection.subscribe(player);
+
+  const queue = {
+    connection,
+    player,
+    channelId: channel.id,
+    songs: [],
+    playing: false,
+    starting: false,
+    timer: null
+  };
+
+  queues.set(guildId, queue);
+
+  player.on(AudioPlayerStatus.Idle, () => {
+    if (queues.get(guildId) !== queue) return;
+
+    queue.songs.shift();
+    queue.playing = false;
+
+    playNext(guildId).catch(console.error);
+  });
+
+  player.on(AudioPlayerStatus.Playing, () => {
+    console.log("LS Music: Audio player is playing");
+  });
+
+  player.on("error", error => {
+    console.error("LS Music player error:", error);
+
+    if (queues.get(guildId) !== queue) return;
+
+    queue.songs.shift();
+    queue.playing = false;
+
+    playNext(guildId).catch(console.error);
+  });
+
+  connection.on("error", error => {
+    console.error("LS Music voice connection error:", error);
+  });
+
+  return queue;
+}
 
 module.exports = {
   initializeMusic,
+
   data: new SlashCommandBuilder()
     .setName("music")
     .setDescription("LS Bot Babe music controls")
@@ -229,7 +180,7 @@ module.exports = {
         .setDescription("Play or add a song")
         .addStringOption(option =>
           option.setName("song")
-            .setDescription("Song name or supported URL")
+            .setDescription("Song name or YouTube URL")
             .setRequired(true)
         )
     )
@@ -280,11 +231,8 @@ module.exports = {
       await interaction.deferReply();
 
       try {
-        const manager = getManager(interaction.client);
-        const node = await getNode(manager);
-
         const query = interaction.options.getString("song");
-        const song = await findSong(node, query);
+        const song = await findSong(query);
 
         let queue = queues.get(guildId);
 
@@ -295,36 +243,21 @@ module.exports = {
         }
 
         if (!queue) {
-          queue = {
-            manager,
-            channelId: channel.id,
-            shardId: interaction.guild.shardId,
-            player: null,
-            songs: [],
-            playing: false,
-            starting: false
-          };
+          queue = await createQueue(interaction, channel);
+        }
 
-          queues.set(guildId, queue);
+        if (queue.timer) {
+          clearTimeout(queue.timer);
+          queue.timer = null;
         }
 
         queue.songs.push(song);
 
         if (!queue.playing && !queue.starting) {
-          try {
-            await playNext(guildId);
-          } catch (error) {
-            queue.songs = queue.songs.filter(s => s !== song);
-
-            if (!queue.player) {
-              queues.delete(guildId);
-            }
-
-            throw error;
-          }
+          await playNext(guildId);
 
           return interaction.editReply(
-            `🎶 Playback requested: **${song.title}**`
+            `🎶 Loading: **${song.title}**`
           );
         }
 
@@ -333,7 +266,7 @@ module.exports = {
         );
 
       } catch (error) {
-        console.error("Music command error:", error);
+        console.error("LS Music command error:", error);
 
         return interaction.editReply(
           `❌ Music error: ${String(error.message).slice(0, 150)}`
@@ -352,29 +285,20 @@ module.exports = {
 
     try {
       if (action === "skip") {
-        if (!queue.player) {
-          return interaction.reply("No active player.");
-        }
+        queue.player.stop(true);
 
-        await queue.player.stopTrack();
         return interaction.reply("⏭️ Skipped!");
       }
 
       if (action === "pause") {
-        if (!queue.player) {
-          return interaction.reply("No active player.");
-        }
+        queue.player.pause();
 
-        await queue.player.setPaused(true);
         return interaction.reply("⏸️ Music paused.");
       }
 
       if (action === "resume") {
-        if (!queue.player) {
-          return interaction.reply("No active player.");
-        }
+        queue.player.unpause();
 
-        await queue.player.setPaused(false);
         return interaction.reply("▶️ Music resumed.");
       }
 
@@ -383,7 +307,8 @@ module.exports = {
           return interaction.reply("🎵 The queue is empty.");
         }
 
-        const list = queue.songs.slice(0, 10)
+        const list = queue.songs
+          .slice(0, 10)
           .map((song, index) =>
             `${index + 1}. ${song.title}`
           )
@@ -397,9 +322,12 @@ module.exports = {
       if (action === "leave") {
         queues.delete(guildId);
 
-        if (queue.player) {
-          await queue.player.destroy();
+        if (queue.timer) {
+          clearTimeout(queue.timer);
         }
+
+        queue.player.stop(true);
+        queue.connection.destroy();
 
         return interaction.reply(
           "👋 Music stopped. LS Bot Babe left the channel."
@@ -407,7 +335,7 @@ module.exports = {
       }
 
     } catch (error) {
-      console.error("Music control error:", error);
+      console.error("LS Music control error:", error);
 
       return interaction.reply({
         content: `❌ Music error: ${String(error.message).slice(0, 150)}`,
