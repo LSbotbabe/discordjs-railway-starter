@@ -244,6 +244,7 @@ module.exports = {
     const guildId = interaction.guildId;
 
     if (action === "play") {
+      await interaction.deferReply();
       const member = await interaction.guild.members.fetch(
         interaction.user.id
       );
@@ -251,13 +252,11 @@ module.exports = {
       const channel = member.voice.channel;
 
       if (!channel) {
-        return interaction.reply({
+        return interaction.editReply({
           content: "🎧 Join a voice channel first!",
           ephemeral: true
         });
       }
-
-      await interaction.deferReply();
 
       try {
         const query = interaction.options.getString("song");
