@@ -93,7 +93,7 @@ async function announceGame(channel, gameId, startedBy = "host") {
   const { createJoinButton } = require("./gameInteractions");
 
   try {
-    await channel.send({
+    const gameMessage = await channel.send({
       content:
         `🎮🔥 **HEYYYY LS FAMILYYYY!!** 💋\n\n` +
         `Your favorite Bot Babe is bringing the FUN! 😈\n\n` +
@@ -107,6 +107,10 @@ setTimeout(async () => {
   if (activeGame !== game || game.status !== "waiting") return;
 
   game.status = "playing";
+
+  await gameMessage.edit({
+  components: []
+});
 
   if (game.players.length === 0) {
     stopGame();
