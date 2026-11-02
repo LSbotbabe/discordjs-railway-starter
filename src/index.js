@@ -14,6 +14,7 @@ StringSelectMenuBuilder,
   Routes,
 } = require("discord.js");
 const gameManager = require("./commands/gameManager");
+const gameInteractions = require("./commands/gameInteractions");
 const RSVP_FILE = "/data/party-rsvps.json";
 const token = process.env.DISCORD_TOKEN;
 if (!token) {
@@ -188,6 +189,12 @@ client.once(Events.ClientReady, () => {
   setInterval(checkBirthdays, 60 * 1000);
 });
 client.on(Events.InteractionCreate, async (interaction) => {
+    
+  // 🎮 LS Bot Babe — Game Buttons
+  if (await gameInteractions.handleGameInteraction(interaction)) {
+    return;
+  }
+ 
   // Slash commands
   if (interaction.isChatInputCommand()) {
     const command = client.commands.get(interaction.commandName);
