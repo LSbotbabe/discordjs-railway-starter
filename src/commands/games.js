@@ -27,7 +27,7 @@ const USER_COOLDOWN_MS = 2000;
 const activeConversations = new Map();
 
 // Keep conversations active for 5 minutes
-const CONVERSATION_TIMEOUT = 5 * 60 * 1000;
+const CONVERSATION_TIMEOUT = 2 * 60 * 1000;
 
 // 💖 LS BOT BABE'S PERSONALITY
 const personality = `
@@ -109,7 +109,7 @@ if (now - lastUserReply < USER_COOLDOWN_MS) return;
       .test(content);
 
   // 👀 Occasionally join conversations
-  const joinConversation = Math.random() < 0.12;
+  const joinConversation = Math.random() < 0.20;
 
   // 💕 Check whether this member is continuing a conversation
 
@@ -120,8 +120,7 @@ const continuingConversation = now < activeUntil;
   if (
   !directlyAddressed &&
   !greeting &&
-  !joinConversation &&
-  !continuingConversation
+  !joinConversation
 ) {
   return;
 }
@@ -137,7 +136,7 @@ userReplyCooldowns.set(userId, now);
     await message.channel.sendTyping();
 
     const history = (
-  conversationHistory.get(message.author.id) || []
+  conversationHistory.get(message.channel.id) || []
 ).slice(-MAX_HISTORY);
 
     const result = await ai.chat.completions.create({
@@ -179,7 +178,7 @@ const updatedHistory = [
 
 // Keep only the most recent messages
 conversationHistory.set(
-  message.author.id,
+  message.channel.id,
   updatedHistory.slice(-MAX_HISTORY)
 );
 
