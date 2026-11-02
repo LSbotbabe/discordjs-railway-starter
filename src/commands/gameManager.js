@@ -98,7 +98,7 @@ async function announceGame(channel, gameId, startedBy = "host") {
         `🎮🔥 **HEYYYY LS FAMILYYYY!!** 💋\n\n` +
         `Your favorite Bot Babe is bringing the FUN! 😈\n\n` +
         `👑 **NOW PLAYING: ${game.name}**\n\n` +
-        `💖 Click **JOIN GAME** below to participate!\n⏳ **You have 5 minutes to join!**`
+        + `💖 Click **JOIN GAME** below to participate!\n⏳ **You have 5 minutes to join!**`
         `Let's get LITTT! 🔥💋`,
       components: [createJoinButton()]
     });
