@@ -58,8 +58,10 @@ function startGame(gameId, startedBy = "host") {
     ...game,
     startedBy,
     startedAt: Date.now(),
-    players: [],
-    scores: {}
+players: [],
+scores: {},
+status: "waiting",
+joinDeadline: Date.now() + 5 * 60 * 1000
   };
 
   if (startedBy === "auto") {
