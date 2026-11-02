@@ -103,6 +103,24 @@ async function announceGame(channel, gameId, startedBy = "host") {
       components: [createJoinButton()]
     });
 
+setTimeout(async () => {
+  if (activeGame !== game || game.status !== "waiting") return;
+
+  game.status = "playing";
+
+  if (game.players.length === 0) {
+    stopGame();
+    await channel.send(
+      "☕💔 Nobody joined Spill the Tea! Game canceled, babes! 💋"
+    );
+    return;
+  }
+
+  await channel.send(
+    `🔒💖 SIGNUPS ARE CLOSED!\n\n☕ Spill the Tea is starting with ${game.players.length} player(s)! 🔥`
+  );
+}, 5 * 60 * 1000);
+    
     return game;
   } catch (error) {
     stopGame();
