@@ -28,6 +28,14 @@ async function handleGameInteraction(interaction) {
     return true;
   }
 
+if (game.status !== "waiting" || Date.now() >= game.joinDeadline) {
+  await interaction.reply({
+    content: "🔒💋 Babyyy! Signups are CLOSED! This game has already started. Catch the next one! 💖",
+    ephemeral: true
+  });
+  return true;
+}
+  
   if (game.players.includes(interaction.user.id)) {
     await interaction.reply({
       content: "💕 You're already in this game, babe!",
