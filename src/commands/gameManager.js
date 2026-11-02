@@ -1,5 +1,5 @@
 // 💋 LS BOT BABE — GAME MANAGER
-const { getRandomQuestions } = require("./spillthetea");
+const { getRandomQuestions } = require('./spillthetea');
 const GAMES = [
   { id: "spillthetea", name: "☕ Spill the Tea" },
   { id: "familyfeud", name: "🔥 LS Family Feud" },
