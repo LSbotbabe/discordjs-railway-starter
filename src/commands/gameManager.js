@@ -80,11 +80,41 @@ function getActiveGame() {
   return activeGame;
 }
 
+// 🎮 LS BOT BABE — GAME ANNOUNCEMENT
+async function announceGame(channel, gameId, startedBy = "host") {
+  const game = startGame(gameId, startedBy);
+
+  if (!game) {
+    return null;
+  }
+
+  const { createJoinButton } = require("./gameInteractions");
+
+  try {
+    await channel.send({
+      content:
+        `🎮🔥 **HEYYYY LS FAMILYYYY!!** 💋\n\n` +
+        `Your favorite Bot Babe is bringing the FUN! 😈\n\n` +
+        `👑 **NOW PLAYING: ${game.name}**\n\n` +
+        `💖 Click **JOIN GAME** below to participate!\n\n` +
+        `Let's get LITTT! 🔥💋`,
+      components: [createJoinButton()]
+    });
+
+    return game;
+  } catch (error) {
+    stopGame();
+    throw error;
+  }
+}
+
+
 module.exports = {
   GAMES,
   getRandomGame,
   canStartAutomaticGame,
   startGame,
   stopGame,
-  getActiveGame
+  getActiveGame,
+  announceGame
 };
