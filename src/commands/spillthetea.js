@@ -20,7 +20,6 @@ const QUESTIONS = [
   "👀 Have you ever had two crushes at the same time?",
   "🔥 What's the biggest relationship dealbreaker for you?",
   "😂 What's the funniest excuse someone gave you for ghosting?",
-  "😈 Have you ever entertained someone you knew was trouble?"
   "😈 Have you ever entertained someone you knew was trouble?",
   "👀 Have you ever secretly liked someone your friend was talking to?",
   "💋 Have you ever kissed someone and immediately regretted it?",
