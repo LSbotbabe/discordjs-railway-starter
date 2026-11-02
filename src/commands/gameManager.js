@@ -1,5 +1,5 @@
 // 💋 LS BOT BABE — GAME MANAGER
-
+const { getRandomQuestions } = require("./spillthetea");
 const GAMES = [
   { id: "spillthetea", name: "☕ Spill the Tea" },
   { id: "familyfeud", name: "🔥 LS Family Feud" },
@@ -123,6 +123,27 @@ setTimeout(async () => {
   await channel.send(
     `🔒💖 SIGNUPS ARE CLOSED!\n\n☕ Spill the Tea is starting with ${game.players.length} player(s)! 🔥`
   );
+
+  if (game.id === "spillthetea") {
+  const questions = getRandomQuestions(5);
+
+  for (const question of questions) {
+    if (activeGame !== game) break;
+
+    await channel.send(question);
+
+    await new Promise(resolve =>
+      setTimeout(resolve, 30 * 1000)
+    );
+  }
+
+  if (activeGame === game) {
+    await channel.send(
+      "☕💖 Spill the Tea is officially over! Thanks for playing, LS FAMILY! 💋🔥"
+    );
+    stopGame();
+  }
+}
 }, 5 * 60 * 1000);
     
     return game;
