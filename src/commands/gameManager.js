@@ -133,7 +133,7 @@ setTimeout(async () => {
     await channel.send(question);
 
     await new Promise(resolve =>
-      setTimeout(resolve, 30 * 1000)
+    setTimeout(resolve, 3 * 60 * 1000)
     );
   }
 
