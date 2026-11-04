@@ -164,7 +164,8 @@ const continuingConversation = now < activeUntil;
   if (
   !directlyAddressed &&
   !greeting &&
-  !joinConversation &&
+    !joinConversation &&
+  !continuingConversation &&
 !currentGame
 ) {
   return;
