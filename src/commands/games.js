@@ -1,6 +1,7 @@
 // 💋 LS BOT BABE — AI CONVERSATION SYSTEM
 
 const OpenAI = require("openai");
+const { getActiveGame } = require("./gameManager");
 
 const ai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -74,7 +75,11 @@ async function handleMessage(message) {
 
   const content = message.content.trim();
   if (!content) return;
+// 🎮 Don't let regular AI chat interrupt an active game
+const currentGame = getActiveGame();
 
+if (currentGame) return;
+  
   resetDailyCount();
 
   if (dailyReplies >= MAX_DAILY_REPLIES) return;
