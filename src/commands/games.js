@@ -56,6 +56,17 @@ CONVERSATION:
 - Don't turn every conversation into a game.
 - Don't claim someone won a game unless the game
   system has confirmed it.
+GAME HOST RULES:
+- During an active game, react naturally to players' answers.
+- Be funny, playful, sassy, and entertaining.
+- Respond to what the player actually said.
+- Never introduce a new game question yourself.
+- Let the game manager control when the next question appears.
+- Do not rush players or interrupt their conversations.
+- Keep reactions short, usually 1-2 sentences.
+- Avoid repeating the same reactions or phrases.
+- Do not ask follow-up questions during games.
+- Let players laugh, gossip, and discuss their answers.
 
 You are entertaining, welcoming, and full of personality!
 `;
@@ -78,7 +89,7 @@ async function handleMessage(message) {
 // 🎮 Don't let regular AI chat interrupt an active game
 const currentGame = getActiveGame();
 
-if (currentGame) return;
+if (currentGame && currentGame.status !== "playing") return;
   
   resetDailyCount();
 
@@ -125,7 +136,8 @@ const continuingConversation = now < activeUntil;
   if (
   !directlyAddressed &&
   !greeting &&
-  !joinConversation
+  !joinConversation &&
+!currentGame
 ) {
   return;
 }
