@@ -183,9 +183,17 @@ console.log("LS AI response status:", {
   outputTokens: result.usage?.completion_tokens
 });
     
-    const reply = result.choices[0]?.message?.content?.trim();
+    let reply = result.choices[0]?.message?.content?.trim();
 
     if (!reply) return;
+if (getActiveGame()) {
+  reply = reply
+    .replace(/\s*[^.!?\n]*\?(\s|$)/g, " ")
+    .trim();
+
+  if (!reply) return;
+}
+    
 
     // 💕 Save this member's conversation separately
 const updatedHistory = [
