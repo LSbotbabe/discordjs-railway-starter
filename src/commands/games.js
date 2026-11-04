@@ -93,6 +93,20 @@ async function handleMessage(message) {
 
   const content = message.content.trim();
   if (!content) return;
+
+// Remember messages from everyone in the games channel
+const channelHistory = conversationHistory.get(message.channel.id) || [];
+
+channelHistory.push({
+  role: "user",
+  content: `${message.author.username}: ${content}`
+});
+
+conversationHistory.set(
+  message.channel.id,
+  channelHistory.slice(-MAX_HISTORY)
+);
+  
 // 🎮 Don't let regular AI chat interrupt an active game
 const currentGame = getActiveGame();
 
@@ -197,11 +211,8 @@ if (getActiveGame()) {
 
     // 💕 Save this member's conversation separately
 const updatedHistory = [
-  ...history,
-  {
-    role: "user",
-    content: `${message.author.username}: ${content}`,
-  },
+  ...(conversationHistory.get(message.channel.id) || []),
+  
   {
     role: "assistant",
     content: reply,
