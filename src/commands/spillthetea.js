@@ -33,10 +33,33 @@ const QUESTIONS = [
   "💖 What's something that instantly makes you lose interest in someone?"
 ];
 
+// Track questions already selected during this bot session
+let remainingQuestions = [];
+
 // Pick 5 different random questions
 function getRandomQuestions(count = 5) {
-  const shuffled = [...QUESTIONS].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
+  const selected = [];
+
+  while (selected.length < Math.min(count, QUESTIONS.length)) {
+    if (remainingQuestions.length === 0) {
+      remainingQuestions = [...QUESTIONS];
+
+      // Shuffle the questions
+      for (let i = remainingQuestions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [remainingQuestions[i], remainingQuestions[j]] =
+          [remainingQuestions[j], remainingQuestions[i]];
+      }
+    }
+
+    const question = remainingQuestions.pop();
+
+    if (!selected.includes(question)) {
+      selected.push(question);
+    }
+  }
+
+  return selected;
 }
 
 module.exports = {
